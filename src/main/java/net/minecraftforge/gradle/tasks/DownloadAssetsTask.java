@@ -46,6 +46,7 @@ import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.model.Defaults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,11 +57,11 @@ public class DownloadAssetsTask extends DefaultTask
     @Internal
     DelayedFile           assetsDir;
 
-    @OutputFile
-    Object                assetIndex;
+    @Internal
+    Object assetIndex;
 
     @Internal
-    private File          virtualRoot  = null;
+    private File virtualRoot  = null;
 
     @Internal
     private final File    minecraftDir = new File(Constants.getMinecraftDirectory(), "assets/objects");
