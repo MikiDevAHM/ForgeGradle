@@ -53,16 +53,12 @@ public class DownloadAssetsTask extends DefaultTask
     @Internal
     DelayedFile           assetsDir;
 
-    @Internal
     Object                assetIndex;
 
-    @Internal
     private File          virtualRoot  = null;
 
-    @Internal
     private final File    minecraftDir = new File(Constants.getMinecraftDirectory(), "assets/objects");
 
-    @Internal
     private static final int MAX_TRIES = 5;
 
     @TaskAction
@@ -147,11 +143,8 @@ public class DownloadAssetsTask extends DefaultTask
         
         if (file.length() != size)
             return true;
-        
-        if (!expectedHash.equalsIgnoreCase(Constants.hash(file, "SHA1")))
-            return true;
-        
-        return false;
+
+        return !expectedHash.equalsIgnoreCase(Constants.hash(file, "SHA1"));
     }
 
     private static class GetAssetTask implements Callable<Boolean>
