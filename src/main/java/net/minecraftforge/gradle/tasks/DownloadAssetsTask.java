@@ -61,10 +61,8 @@ public class DownloadAssetsTask extends DefaultTask
 
     private File virtualRoot  = null;
 
-    @Internal
     private final File    minecraftDir = new File(Constants.getMinecraftDirectory(), "assets/objects");
 
-    @Internal
     private static final int MAX_TRIES = 5;
 
     @TaskAction
