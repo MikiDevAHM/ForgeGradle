@@ -57,7 +57,7 @@ public class DownloadAssetsTask extends DefaultTask
     @Internal
     DelayedFile           assetsDir;
 
-    Object assetIndex;
+    private Object assetIndex;
 
     private File virtualRoot  = null;
 
