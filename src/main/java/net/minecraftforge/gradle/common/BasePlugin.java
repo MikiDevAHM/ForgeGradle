@@ -228,12 +228,18 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
         project.getRepositories().maven(mavenArtifactRepository -> {
             try {
                 mavenArtifactRepository.getMetadataSources().artifact(); // mappings don't have pom
-                mavenArtifactRepository.setUrl(new URL("https://repo.papermc.io/repository/maven-public/"));
+                mavenArtifactRepository.setUrl(new URL("https://maven.neoforged.net/releases"));
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
         });
-        project.getDependencies().add(CONFIG_MCP_DATA, project.files("libs/mcp-1.8.9-srg.zip"));
+        project.getDependencies().add(CONFIG_MCP_DATA, ImmutableMap.of(
+                "group", "de.oceanlabs.mcp",
+                "name", "mcp",
+                "version", "1.8.9",
+                "classifier", "srg",
+                "ext", "zip"
+        ));
 
         Logger logger = this.project.getLogger();
         logger.warn("WARNING: You are using an unsupported version of ForgeGradle.");
