@@ -24,6 +24,7 @@ import net.minecraftforge.gradle.util.caching.Cached;
 import net.minecraftforge.gradle.util.caching.CachedTask;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.InputFile;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
 import org.jetbrains.java.decompiler.code.CodeConstants;
@@ -36,6 +37,8 @@ import org.jetbrains.java.decompiler.util.InterpreterUtil;
 import org.jetbrains.java.decompiler.util.JADNameProvider;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,6 +60,7 @@ public class ApplyFernFlowerTask extends CachedTask {
     @OutputFile
     Object outJar;
 
+    @Internal
     private FileCollection         classpath;
 
     @TaskAction
@@ -130,21 +134,18 @@ public class ApplyFernFlowerTask extends CachedTask {
             if (internalPath == null) {
                 return InterpreterUtil.getBytes(file);
             } else {
-                ZipFile archive = new ZipFile(file);
-                try {
+                try (ZipFile archive = new ZipFile(file)) {
                     ZipEntry entry = archive.getEntry(internalPath);
                     if (entry == null) {
                         throw new IOException("Entry not found: " + internalPath);
                     }
                     return InterpreterUtil.getBytes(archive, entry);
-                } finally {
-                    archive.close();
                 }
             }
         }
     }
 
-    class ArtifactSaver implements IResultSaver {
+    static class ArtifactSaver implements IResultSaver {
         private final Map<String, ZipOutputStream> mapArchiveStreams = new HashMap<String, ZipOutputStream>();
         private final Map<String, Set<String>> mapArchiveEntries = new HashMap<String, Set<String>>();
         private final File root;
@@ -178,11 +179,8 @@ public class ApplyFernFlowerTask extends CachedTask {
         public void saveClassFile(String path, String qualifiedName, String entryName, String content, int[] mapping) {
             File file = new File(getAbsolutePath(path), entryName);
             try {
-                Writer out = new OutputStreamWriter(new FileOutputStream(file), "UTF8");
-                try {
+                try (Writer out = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8)) {
                     out.write(content);
-                } finally {
-                    out.close();
                 }
             } catch (IOException ex) {
                 DecompilerContext.getLogger().writeMessage("Cannot write class file " + file, ex);
@@ -219,8 +217,7 @@ public class ApplyFernFlowerTask extends CachedTask {
             }
 
             try {
-                ZipFile srcArchive = new ZipFile(new File(source));
-                try {
+                try (ZipFile srcArchive = new ZipFile(new File(source))) {
                     ZipEntry entry = srcArchive.getEntry(entryName);
                     if (entry != null) {
                         InputStream in = srcArchive.getInputStream(entry);
@@ -233,8 +230,6 @@ public class ApplyFernFlowerTask extends CachedTask {
                         InterpreterUtil.copyStream(in, out);
                         in.close();
                     }
-                } finally {
-                    srcArchive.close();
                 }
             } catch (IOException ex) {
                 String message = "Cannot copy entry " + entryName + " from " + source + " to " + file;
@@ -258,7 +253,7 @@ public class ApplyFernFlowerTask extends CachedTask {
                 ze.setCreationTime(FileTime.fromMillis(0L));
                 out.putNextEntry(ze);
                 if (content != null) {
-                    out.write(content.getBytes("UTF-8"));
+                    out.write(content.getBytes(StandardCharsets.UTF_8));
                 }
             } catch (IOException ex) {
                 String message = "Cannot write entry " + entryName + " to " + file;
