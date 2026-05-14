@@ -56,14 +56,16 @@ public class DownloadAssetsTask extends DefaultTask
     @Internal
     DelayedFile           assetsDir;
 
-    @Cached
-    @OutputDirectory
+    @OutputFile
     Object                assetIndex;
 
+    @Internal
     private File          virtualRoot  = null;
 
+    @Internal
     private final File    minecraftDir = new File(Constants.getMinecraftDirectory(), "assets/objects");
 
+    @Internal
     private static final int MAX_TRIES = 5;
 
     @TaskAction
