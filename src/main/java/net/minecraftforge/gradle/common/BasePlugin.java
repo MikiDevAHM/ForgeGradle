@@ -228,7 +228,7 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
         project.getRepositories().maven(mavenArtifactRepository -> {
             try {
                 mavenArtifactRepository.getMetadataSources().artifact(); // mappings don't have pom
-                mavenArtifactRepository.setUrl(new URL("https://maven.neoforged.net/releases"));
+                mavenArtifactRepository.setUrl(new URL("https://maven.neoforged.net/"));
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
