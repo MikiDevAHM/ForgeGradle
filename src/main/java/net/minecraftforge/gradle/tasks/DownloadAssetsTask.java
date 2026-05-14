@@ -41,6 +41,7 @@ import net.minecraftforge.gradle.util.json.version.AssetIndex;
 import net.minecraftforge.gradle.util.json.version.AssetIndex.AssetEntry;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,13 +50,19 @@ import com.google.common.io.Files;
 
 public class DownloadAssetsTask extends DefaultTask
 {
+    @Internal
     DelayedFile           assetsDir;
 
+    @Internal
     Object                assetIndex;
 
+    @Internal
     private File          virtualRoot  = null;
+
+    @Internal
     private final File    minecraftDir = new File(Constants.getMinecraftDirectory(), "assets/objects");
 
+    @Internal
     private static final int MAX_TRIES = 5;
 
     @TaskAction
