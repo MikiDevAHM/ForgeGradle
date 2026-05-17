@@ -59,20 +59,16 @@ import com.google.common.io.Resources;
 
 public class CreateStartTask extends CachedTask
 {
-    @Input
     HashMap<String, String>     resources    = Maps.newHashMap();
 
-    @Input
     HashMap<String, Object>     replacements = Maps.newHashMap();
 
-    @Input
     List<String>                extraLines   = Lists.newArrayList();
 
     @Cached
     @OutputDirectory
     private Object              startOut;
 
-    @InputFiles
     private Set<String>         classpath    = Sets.newHashSet();
     @Input
     private boolean             compile;
