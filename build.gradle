@@ -68,7 +68,7 @@ dependencies {
     implementation gradleApi()
 
     // moved to the beginning to be the overrider
-    implementation 'org.ow2.asm:asm-debug-all:5.0.3'
+    implementation 'org.ow2.asm:asm-debug-all:5.2'
     implementation 'com.google.guava:guava:18.0'
 
     implementation 'net.sf.opencsv:opencsv:2.3' // reading CSVs.. also used by SpecialSource
