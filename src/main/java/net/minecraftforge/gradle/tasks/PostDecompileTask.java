@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
 import net.minecraftforge.gradle.common.Constants;
 import net.minecraftforge.gradle.util.caching.Cached;
 import net.minecraftforge.gradle.util.mcp.FFPatcher;
-import net.minecraftforge.gradle.util.mcp.FmlCleanup;
 import net.minecraftforge.gradle.util.mcp.GLConstantFixer;
 import net.minecraftforge.gradle.util.mcp.McpCleanup;
 import net.minecraftforge.gradle.util.patching.ContextualPatch;
@@ -46,6 +45,7 @@ import org.gradle.api.logging.LogLevel;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
 
 import com.github.abrarsyed.jastyle.ASFormatter;
@@ -62,6 +62,7 @@ public class PostDecompileTask extends AbstractEditJarTask
     @InputFile
     private Object                       inJar;
 
+    @InputDirectory
     private Object                       patchDir;
 
     @InputFile
@@ -74,9 +75,13 @@ public class PostDecompileTask extends AbstractEditJarTask
     private static final Pattern         BEFORE      = Pattern.compile("(?m)((case|default).+(?:\\r\\n|\\r|\\n))(?:\\r\\n|\\r|\\n)");
     private static final Pattern         AFTER       = Pattern.compile("(?m)(?:\\r\\n|\\r|\\n)((?:\\r\\n|\\r|\\n)[ \\t]+(case|default))");
 
+    @Internal
     private final Multimap<String, File> patchesMap  = ArrayListMultimap.create();
+    @Internal
     private final List<PatchAttempt>      patchErrors = Lists.newArrayList();
+    @Internal
     private final ASFormatter            formatter   = new ASFormatter();
+    @Internal
     private GLConstantFixer              oglFixer;
 
     @Override
@@ -267,6 +272,7 @@ public class PostDecompileTask extends AbstractEditJarTask
      */
     private static class ContextProvider implements ContextualPatch.IContextProvider
     {
+        @Internal
         private List<String> data;
 
         public ContextProvider(String file)

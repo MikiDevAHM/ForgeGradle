@@ -67,7 +67,9 @@ public class ApplyS2STask extends DefaultTask
     private Object excModifiers;
 
     // stuff defined on the tasks..
+    @InputFiles
     private final List<Object> in = new LinkedList<Object>();
+    @OutputFile
     private Object out;
 
     @TaskAction

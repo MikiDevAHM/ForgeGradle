@@ -42,6 +42,7 @@ import org.gradle.api.file.FileVisitor;
 import org.gradle.api.logging.LogLevel;
 import org.gradle.api.logging.LoggingManager;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.util.GradleVersion;
@@ -71,7 +72,9 @@ public class CreateStartTask extends CachedTask
     @OutputDirectory
     private Object              startOut;
 
+    @InputFiles
     private Set<String>         classpath    = Sets.newHashSet();
+    @Input
     private boolean             compile;
 
     private static final String EXTRA_LINES  = "//@@EXTRALINES@@";

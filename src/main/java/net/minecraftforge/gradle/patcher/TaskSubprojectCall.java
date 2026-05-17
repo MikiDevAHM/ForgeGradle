@@ -31,6 +31,8 @@ import net.minecraftforge.gradle.common.Constants;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.invocation.Gradle;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
@@ -43,9 +45,13 @@ import com.google.common.io.Resources;
 
 class TaskSubprojectCall extends DefaultTask
 {
+    @Input
     private Object projectDir;
+    @Input
     private Object callLine;
+    @InputFiles
     private final List<URL> initResources = Lists.newArrayList();
+    @Input
     private final Map<String, Object> replacements = Maps.newHashMap();
     
     //@formatter:off

@@ -40,11 +40,14 @@ public class ExtractConfigTask extends CachedTask implements PatternFilterable
     @Input
     private String     config;
 
+    @Internal
     private final PatternSet patternSet       = new PatternSet();
 
     @Input
     private boolean    includeEmptyDirs = true;
 
+    @Optional
+    @Input
     private boolean    clean            = false;
 
     @Cached

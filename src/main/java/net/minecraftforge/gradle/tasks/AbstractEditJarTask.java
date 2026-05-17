@@ -37,6 +37,7 @@ import net.minecraftforge.gradle.util.caching.Cached;
 import net.minecraftforge.gradle.util.caching.CachedTask;
 
 import org.gradle.api.tasks.InputFile;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
 
@@ -52,7 +53,9 @@ public abstract class AbstractEditJarTask extends CachedTask
     @OutputFile
     private Object outJar;
 
+    @Internal
     protected File resolvedInJar;
+    @Internal
     protected File resolvedOutJar;
 
     @TaskAction

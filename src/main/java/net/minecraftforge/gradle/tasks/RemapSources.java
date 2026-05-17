@@ -30,7 +30,9 @@ import net.minecraftforge.gradle.common.Constants;
 import net.minecraftforge.gradle.util.delayed.DelayedFile;
 import net.minecraftforge.gradle.util.mcp.JavadocAdder;
 
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
+import org.gradle.api.tasks.Internal;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -49,12 +51,18 @@ public class RemapSources extends AbstractEditJarTask
     @InputFile
     private DelayedFile               paramsCsv;
 
+    @Input
     private boolean                   addsJavadocs = true;
 
+    @Internal
     private final Map<String, String> methods      = Maps.newHashMap();
+    @Internal
     private final Map<String, String> methodDocs   = Maps.newHashMap();
+    @Internal
     private final Map<String, String> fields       = Maps.newHashMap();
+    @Internal
     private final Map<String, String> fieldDocs    = Maps.newHashMap();
+    @Internal
     private final Map<String, String> params       = Maps.newHashMap();
 
     private static final Pattern      SRG_FINDER   = Pattern.compile("func_[0-9]+_[a-zA-Z_]+|field_[0-9]+_[a-zA-Z_]+|p_[\\w]+_\\d+_\\b");

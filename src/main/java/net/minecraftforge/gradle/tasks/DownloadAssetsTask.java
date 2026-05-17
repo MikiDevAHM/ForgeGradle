@@ -35,18 +35,15 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import net.minecraftforge.gradle.common.Constants;
-import net.minecraftforge.gradle.util.caching.Cached;
 import net.minecraftforge.gradle.util.delayed.DelayedFile;
 import net.minecraftforge.gradle.util.json.JsonFactory;
 import net.minecraftforge.gradle.util.json.version.AssetIndex;
 import net.minecraftforge.gradle.util.json.version.AssetIndex.AssetEntry;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
-import org.gradle.api.tasks.OutputDirectory;
-import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
-import org.gradle.model.Defaults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,12 +53,14 @@ public class DownloadAssetsTask extends DefaultTask
 {
     @Internal
     DelayedFile           assetsDir;
-
-    @Internal
+    
+    @Input
     private Object assetIndex;
 
+    @Internal
     private File virtualRoot  = null;
 
+    @Internal
     private final File    minecraftDir = new File(Constants.getMinecraftDirectory(), "assets/objects");
 
     private static final int MAX_TRIES = 5;

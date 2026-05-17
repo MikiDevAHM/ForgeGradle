@@ -40,6 +40,8 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
 
 import com.cloudbees.diff.PatchException;
@@ -72,13 +74,16 @@ public class PatchSourcesTask extends AbstractEditJarTask
     @Input
     private boolean                failOnError   = false;
 
+    @InputFile
     private Object                 patches;
 
     @InputFiles
     private List<Object>           injects       = Lists.newArrayList();
 
     // stateful pieces of this task
+    @Nested
     private ContextProvider        context;
+    @Internal
     private ArrayList<PatchedFile> loadedPatches = Lists.newArrayList();
 
     @Override
@@ -401,6 +406,7 @@ public class PatchSourcesTask extends AbstractEditJarTask
 
     private static class ContextProvider implements ContextualPatch.IContextProvider
     {
+        @Internal
         public Map<String, String> fileMap;
 
         private final int          stripAmmount;

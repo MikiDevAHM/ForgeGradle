@@ -46,6 +46,7 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
 
@@ -73,11 +74,17 @@ class TaskGenBinPatches extends DefaultTask
     @OutputFile private Object runBinPatches;
     //@formatter:on
 
+    @InputFiles
     private List<Object>             patchSets    = Lists.newArrayList();
+    @Internal
     private HashMap<String, String>  obfMapping   = new HashMap<String, String>();
+    @Internal
     private HashMap<String, String>  srgMapping   = new HashMap<String, String>();
+    @Internal
     private Multimap<String, String> innerClasses = ArrayListMultimap.create();
+    @Internal
     private Set<String>              patchedFiles = new HashSet<String>();
+    @Internal
     private Delta                    delta        = new Delta();
 
     //@formatter:off

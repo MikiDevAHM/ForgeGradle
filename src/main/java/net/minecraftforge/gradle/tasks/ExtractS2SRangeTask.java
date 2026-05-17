@@ -48,6 +48,7 @@ public class ExtractS2SRangeTask extends DefaultTask
     @InputFiles
     private List<Object> libs = Lists.newArrayList();
 
+    @InputFiles
     private final List<Object> sources = Lists.newArrayList();
 
     @OutputFile

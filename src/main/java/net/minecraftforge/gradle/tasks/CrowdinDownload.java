@@ -35,6 +35,7 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.specs.Spec;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.OutputFiles;
 import org.gradle.api.tasks.TaskAction;
 
@@ -51,6 +52,7 @@ public class CrowdinDownload extends DefaultTask
     private Object              apiKey;
     @Input
     private boolean             extract      = true;
+    @OutputFile
     private Object              output;
 
     // format these with the projectId and apiKey

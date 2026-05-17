@@ -90,6 +90,8 @@ public class DeobfuscateJar extends CachedTask
     @Input
     private boolean           failOnAtError = true;
 
+    @OutputFile
+    @Cached
     private Object            outJar;
 
     @InputFiles
@@ -487,7 +489,9 @@ public class DeobfuscateJar extends CachedTask
 
     private static final class ErroringRemappingAccessMap extends AccessMap
     {
+        @Internal
         private final Map<String, String> renames     = Maps.newHashMap();
+        @Internal
         public final Map<String, String>  brokenLines = Maps.newHashMap();
 
         public ErroringRemappingAccessMap(File[] renameCsvs) throws IOException

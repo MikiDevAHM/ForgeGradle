@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import net.minecraftforge.gradle.common.Constants;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
@@ -38,6 +39,7 @@ import com.google.gson.GsonBuilder;
 
 class TaskProcessJson extends DefaultTask
 {
+    @Input
     private Map<String, Object> replacements = Maps.newHashMap();
 
     @InputFile

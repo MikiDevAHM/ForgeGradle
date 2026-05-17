@@ -38,6 +38,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import org.gradle.api.tasks.InputFile;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
 import org.objectweb.asm.ClassReader;
@@ -575,8 +576,11 @@ public class MergeJars extends CachedTask
 
     private class MethodWrapper
     {
+        @Internal
         private MethodNode node;
+        @Internal
         public boolean     client;
+        @Internal
         public boolean     server;
 
         public MethodWrapper(MethodNode node)
