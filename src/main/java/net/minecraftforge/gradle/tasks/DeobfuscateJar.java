@@ -414,11 +414,8 @@ public class DeobfuscateJar extends CachedTask
     }
 
     /**
-     * returns the actual output file depending on Clean status
      * @return File representing output jar
      */
-    @Cached
-    @OutputFile
     public File getOutJar()
     {
         return getProject().file(outJar);
