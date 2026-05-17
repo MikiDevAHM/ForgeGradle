@@ -54,15 +54,10 @@ public class RemapSources extends AbstractEditJarTask
     @Input
     private boolean                   addsJavadocs = true;
 
-    @Internal
     private final Map<String, String> methods      = Maps.newHashMap();
-    @Internal
     private final Map<String, String> methodDocs   = Maps.newHashMap();
-    @Internal
     private final Map<String, String> fields       = Maps.newHashMap();
-    @Internal
     private final Map<String, String> fieldDocs    = Maps.newHashMap();
-    @Internal
     private final Map<String, String> params       = Maps.newHashMap();
 
     private static final Pattern      SRG_FINDER   = Pattern.compile("func_[0-9]+_[a-zA-Z_]+|field_[0-9]+_[a-zA-Z_]+|p_[\\w]+_\\d+_\\b");
