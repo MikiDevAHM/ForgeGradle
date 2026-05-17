@@ -35,6 +35,7 @@ import com.google.common.collect.Lists;
 import groovy.lang.Closure;
 import net.minecraftforge.gradle.common.Constants;
 import net.minecraftforge.gradle.util.GradleConfigurationException;
+import org.jetbrains.annotations.NotNull;
 
 public class ReobfTaskFactory implements NamedDomainObjectFactory<IReobfuscator>
 {
@@ -45,9 +46,8 @@ public class ReobfTaskFactory implements NamedDomainObjectFactory<IReobfuscator>
         this.plugin = plugin;
     }
 
-    @SuppressWarnings("serial")
     @Override
-    public IReobfuscator create(final String jarName)
+    public @NotNull IReobfuscator create(final String jarName)
     {
         String name = "reobf" + Character.toUpperCase(jarName.charAt(0)) + jarName.substring(1);
         final TaskSingleReobf task = plugin.maybeMakeTask(name, TaskSingleReobf.class);

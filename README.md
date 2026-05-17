@@ -1,6 +1,28 @@
 ForgeGradle
 ===========
 
-[![Join the chat at https://gitter.im/MinecraftForge/ForgeGradle](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/MinecraftForge/ForgeGradle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 Minecraft mod development framework used by Forge and FML for the gradle build system
+
+## Fix Checklist
+
+- [x] ASM `5.0.3`→`9.7.1` — NPE in `ClassReader.readCode` during reobfJar (modular: `asm` + `asm-commons` + `asm-tree`)
+- [x] `setupDecompWorkspace`
+- [x] `setupCIWorkspace`
+- [ ] `reobfJar` — NPE fix applied, needs validation
+- [ ] `deobfBinJar`
+- [x] `genEclipseRuns`
+- [x] `genIntellijRuns`
+- [x] `jar` — build compiles and jars
+- [x] `compileJava` / `compileKotlin`
+- [x] `processResources`
+- [x] `deobfCompileDummyTask` / `deobfProvidedDummyTask`
+- [x] GradleStart classes (authlib, launchwrapper)
+- [ ] Srg2Source integration
+- [ ] MCInjector integration
+- [ ] RetroGuard integration
+- [ ] BinPatch generation / application
+- [ ] ReobfExceptor (decomp reobf path)
+- [ ] Exc modifier extraction (patcher)
+- [ ] SRG mapping loading (primary + secondary + extra lines)
+- [ ] SpecialSource fallback inheritance provider
+- [ ] CSV field/method loading
