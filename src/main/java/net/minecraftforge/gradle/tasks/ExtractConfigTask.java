@@ -131,7 +131,6 @@ public class ExtractConfigTask extends CachedTask implements PatternFilterable
         return false;
     }
 
-    @Optional
     @Input
     public boolean isClean()
     {
