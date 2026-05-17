@@ -5,7 +5,7 @@ Minecraft mod development framework used by Forge and FML for the gradle build s
 
 ## Fix Checklist
 
-- [x] ASM `5.0.3`→`9.7.1` — NPE in `ClassReader.readCode` during reobfJar (modular: `asm` + `asm-commons` + `asm-tree`)
+- [x] ASM `5.0.3`→`9.7.1` — NPE in `ClassReader.readCode` during reobfJar (modular: `asm` + `asm-commons` + `asm-tree`; exclude from SpecialSource shade dep; force via resolutionStrategy)
 - [x] `setupDecompWorkspace`
 - [x] `setupCIWorkspace`
 - [ ] `reobfJar` — NPE fix applied, needs validation
