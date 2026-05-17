@@ -27,6 +27,7 @@ import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.java.decompiler.code.CodeConstants;
 import org.jetbrains.java.decompiler.main.DecompilerContext;
 import org.jetbrains.java.decompiler.main.decompiler.BaseDecompiler;
@@ -71,6 +72,21 @@ public class ApplyFernFlowerTask extends CachedTask {
         final File tempDir = this.getTemporaryDir();
         final File tempJar = new File(this.getTemporaryDir(), in.getName());
 
+        Map<String, Object> mapOptions = getStringObjectMap();
+
+        PrintStreamLogger logger = new PrintStreamLogger(Constants.getTaskLogStream(getProject(), getName() + ".log"));
+        BaseDecompiler decompiler = new BaseDecompiler(new ByteCodeProvider(), new ArtifactSaver(tempDir), mapOptions, logger);
+
+        decompiler.addSpace(in, true);
+        for (File library : classpath) {
+            decompiler.addSpace(library, false);
+        }
+
+        decompiler.decompileContext();
+        Constants.copyFile(tempJar, out);
+    }
+
+    private static @NotNull Map<String, Object> getStringObjectMap() {
         Map<String, Object> mapOptions = new HashMap<String, Object>();
         mapOptions.put(IFernflowerPreferences.DECOMPILE_INNER, "1");
         mapOptions.put(IFernflowerPreferences.DECOMPILE_GENERIC_SIGNATURES, "1");
@@ -83,17 +99,7 @@ public class ApplyFernFlowerTask extends CachedTask {
         mapOptions.put(IFernflowerPreferences.UNIT_TEST_MODE, "0");
         mapOptions.put(IFernflowerPreferences.MAX_PROCESSING_METHOD, "0");
         mapOptions.put(DecompilerContext.RENAMER_FACTORY, AdvancedJadRenamerFactory.class.getName());
-
-        PrintStreamLogger logger = new PrintStreamLogger(Constants.getTaskLogStream(getProject(), getName() + ".log"));
-        BaseDecompiler decompiler = new BaseDecompiler(new ByteCodeProvider(), new ArtifactSaver(tempDir), mapOptions, logger);
-
-        decompiler.addSpace(in, true);
-        for (File library : classpath) {
-            decompiler.addSpace(library, false);
-        }
-
-        decompiler.decompileContext();
-        Constants.copyFile(tempJar, out);
+        return mapOptions;
     }
 
     public static class AdvancedJadRenamerFactory implements IVariableNamingFactory {

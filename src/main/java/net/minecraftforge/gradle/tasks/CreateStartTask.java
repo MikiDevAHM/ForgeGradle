@@ -269,4 +269,9 @@ public class CreateStartTask extends CachedTask
     {
         this.startOut = outputFile;
     }
+
+    public boolean isCompile()
+    {
+        return compile;
+    }
 }

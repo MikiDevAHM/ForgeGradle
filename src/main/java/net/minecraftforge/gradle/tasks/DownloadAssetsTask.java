@@ -57,10 +57,8 @@ public class DownloadAssetsTask extends DefaultTask
     @Input
     private Object assetIndex;
 
-    @Internal
     private File virtualRoot  = null;
 
-    @Internal
     private final File    minecraftDir = new File(Constants.getMinecraftDirectory(), "assets/objects");
 
     private static final int MAX_TRIES = 5;
@@ -74,7 +72,7 @@ public class DownloadAssetsTask extends DefaultTask
             outDir.mkdirs();
         }
 
-        File indexFile = getAssetsIndex();
+        File indexFile = getAssetIndex();
         AssetIndex index = JsonFactory.loadAssetsIndex(indexFile);
 
         // check virtual
@@ -115,12 +113,12 @@ public class DownloadAssetsTask extends DefaultTask
         this.assetsDir = assetsDir;
     }
 
-    public File getAssetsIndex()
+    public File getAssetIndex()
     {
         return getProject().file(assetIndex);
     }
 
-    public void setAssetsIndex(Closure<File> index)
+    public void setAssetIndex(Object index)
     {
         this.assetIndex = index;
     }

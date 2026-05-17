@@ -53,9 +53,7 @@ public abstract class AbstractEditJarTask extends CachedTask
     @OutputFile
     private Object outJar;
 
-    @Internal
     protected File resolvedInJar;
-    @Internal
     protected File resolvedOutJar;
 
     @TaskAction

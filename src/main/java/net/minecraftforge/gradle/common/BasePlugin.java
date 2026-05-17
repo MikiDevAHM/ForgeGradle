@@ -413,7 +413,7 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
         DownloadAssetsTask getAssets = makeTask(TASK_DL_ASSETS, DownloadAssetsTask.class);
         {
             getAssets.setAssetsDir(delayedFile(DIR_ASSETS));
-            getAssets.setAssetsIndex(delayedFile(JSON_ASSET_INDEX));
+            getAssets.setAssetIndex(delayedFile(JSON_ASSET_INDEX));
             getAssets.dependsOn(getAssetsIndex);
         }
 

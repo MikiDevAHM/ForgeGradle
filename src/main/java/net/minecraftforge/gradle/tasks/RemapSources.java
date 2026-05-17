@@ -213,7 +213,7 @@ public class RemapSources extends AbstractEditJarTask
         this.paramsCsv = paramsCsv;
     }
 
-    public boolean addsJavadocs()
+    public boolean isAddsJavadocs()
     {
         return addsJavadocs;
     }

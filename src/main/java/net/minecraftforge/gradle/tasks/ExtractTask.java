@@ -41,7 +41,6 @@ public class ExtractTask extends CachedTask implements PatternFilterable
     @InputFiles
     private LinkedHashSet<Object> sourcePaths      = new LinkedHashSet<Object>();
 
-    @Input
     private PatternSet            patternSet       = new PatternSet();
 
     @Input
@@ -134,6 +133,11 @@ public class ExtractTask extends CachedTask implements PatternFilterable
     }
 
     public boolean shouldClean()
+    {
+        return clean;
+    }
+
+    public boolean isClean()
     {
         return clean;
     }

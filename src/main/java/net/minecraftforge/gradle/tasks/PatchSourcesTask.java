@@ -81,9 +81,7 @@ public class PatchSourcesTask extends AbstractEditJarTask
     private List<Object>           injects       = Lists.newArrayList();
 
     // stateful pieces of this task
-    @Nested
     private ContextProvider        context;
-    @Internal
     private ArrayList<PatchedFile> loadedPatches = Lists.newArrayList();
 
     @Override
