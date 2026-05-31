@@ -12,7 +12,7 @@ import org.gradle.api.plugins.JavaPluginExtension;
 public class Launch4jPluginExtension implements Serializable
 {
     private static final long serialVersionUID = 1001523559902066994L;
-    
+
     private String  outputDir      = "launch4j";
     private String  xmlFileName    = "launch4j.xml";
     private String  mainClassName;
@@ -33,26 +33,26 @@ public class Launch4jPluginExtension implements Serializable
     private String  version        = "";
     private String  copyright      = "unknown";
     private String  opt            = "";
-	
-	private String bundledJrePath;
-	private String jreMinVersion = "1.6.0";
-	private String jreMaxVersion;
-	
-	private String mutexName;
-	private String windowTitle;
-	
-	private String messagesStartupError;
-	private String messagesBundledJreError;
-	private String messagesJreVersionError;
+
+    private String bundledJrePath;
+    private String jreMinVersion = "1.6.0";
+    private String jreMaxVersion;
+
+    private String mutexName;
+    private String windowTitle;
+
+    private String messagesStartupError;
+    private String messagesBundledJreError;
+    private String messagesJreVersionError;
     private String messagesLauncherError;
-	
-	private int initialHeapSize;
-	private int initialHeapPercent;
-	private int maxHeapSize;
-	private int maxHeapPercent;
-	
-	private static final Pattern JAVA_VERSION_REGEX = Pattern.compile("\\d+(\\.\\d+){0,1}");
-	
+
+    private int initialHeapSize;
+    private int initialHeapPercent;
+    private int maxHeapSize;
+    private int maxHeapPercent;
+
+    private static final Pattern JAVA_VERSION_REGEX = Pattern.compile("\\d+(\\.\\d+)?");
+
     public File getXmlOutFileForProject(Project project)
     {
         return project.file(project.getBuildDir() + "/" + outputDir + "/" + xmlFileName);
@@ -62,15 +62,12 @@ public class Launch4jPluginExtension implements Serializable
     {
         outfile = project.getName()+".exe";
         version = (String)project.getVersion();
-        
+
         JavaPluginExtension javaConv = (JavaPluginExtension) project.getExtensions().getByName("java");
-        if (javaConv != null)
+        jreMinVersion = javaConv.getTargetCompatibility().toString();
+        if (JAVA_VERSION_REGEX.matcher(jreMinVersion).matches())
         {
-            jreMinVersion = javaConv.getTargetCompatibility().toString();
-            if (JAVA_VERSION_REGEX.matcher(jreMinVersion).matches())
-            {
-                jreMinVersion = jreMinVersion + ".0";
-            }
+            jreMinVersion = jreMinVersion + ".0";
         }
     }
 

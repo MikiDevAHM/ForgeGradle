@@ -154,17 +154,13 @@ public class Launch4jPlugin implements Plugin<Project>
         final JavaExec task = makeTask(TASK_RUN_NAME, JavaExec.class);
         task.setDescription("Runs launch4j to generate an .exe file");
         task.setGroup(LAUNCH4J_GROUP);
-        project.afterEvaluate(new Action<Project>() {
-            @Override
-            public void execute(Project project)
-            {
-                Launch4jPluginExtension ext = ((Launch4jPluginExtension) task.getProject().getExtensions().getByName(Launch4jPlugin.LAUNCH4J_CONFIGURATION_NAME));
+        project.afterEvaluate(project -> {
+            Launch4jPluginExtension ext = ((Launch4jPluginExtension) task.getProject().getExtensions().getByName(Launch4jPlugin.LAUNCH4J_CONFIGURATION_NAME));
 
-                task.getMainClass().set("net.sf.launch4j.Main");
-                task.args(project.getBuildDir() + "/" + ext.getOutputDir() + "/" + ext.getXmlFileName());
-                task.setWorkingDir(project.file(ext.getChdir()));
-                task.setClasspath(project.fileTree(launch4JDir));
-            }
+            task.getMainClass().set("net.sf.launch4j.Main");
+            task.args(project.getBuildDir() + "/" + ext.getOutputDir() + "/" + ext.getXmlFileName());
+            task.setWorkingDir(project.file(ext.getChdir()));
+            task.setClasspath(project.fileTree(launch4JDir));
         });
         return task;
     }

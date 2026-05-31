@@ -19,6 +19,16 @@
  */
 package net.minecraftforge.gradle.tasks;
 
+import au.com.bytecode.opencsv.CSVReader;
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
+import net.minecraftforge.gradle.common.Constants;
+import net.minecraftforge.gradle.util.delayed.DelayedFile;
+import net.minecraftforge.gradle.util.mcp.JavadocAdder;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFile;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,87 +36,64 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.minecraftforge.gradle.common.Constants;
-import net.minecraftforge.gradle.util.delayed.DelayedFile;
-import net.minecraftforge.gradle.util.mcp.JavadocAdder;
-
-import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.InputFile;
-import org.gradle.api.tasks.Internal;
-
-import au.com.bytecode.opencsv.CSVReader;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
-
-public class RemapSources extends AbstractEditJarTask
-{
+public class RemapSources extends AbstractEditJarTask {
     @InputFile
-    private DelayedFile               methodsCsv;
+    private DelayedFile methodsCsv;
 
     @InputFile
-    private DelayedFile               fieldsCsv;
+    private DelayedFile fieldsCsv;
 
     @InputFile
-    private DelayedFile               paramsCsv;
+    private DelayedFile paramsCsv;
 
     @Input
-    private boolean                   addsJavadocs = true;
+    private boolean addsJavadocs = true;
 
-    private final Map<String, String> methods      = Maps.newHashMap();
-    private final Map<String, String> methodDocs   = Maps.newHashMap();
-    private final Map<String, String> fields       = Maps.newHashMap();
-    private final Map<String, String> fieldDocs    = Maps.newHashMap();
-    private final Map<String, String> params       = Maps.newHashMap();
+    private final Map<String, String> methods = Maps.newHashMap();
+    private final Map<String, String> methodDocs = Maps.newHashMap();
+    private final Map<String, String> fields = Maps.newHashMap();
+    private final Map<String, String> fieldDocs = Maps.newHashMap();
+    private final Map<String, String> params = Maps.newHashMap();
 
-    private static final Pattern      SRG_FINDER   = Pattern.compile("func_[0-9]+_[a-zA-Z_]+|field_[0-9]+_[a-zA-Z_]+|p_[\\w]+_\\d+_\\b");
-    private static final Pattern      METHOD       = Pattern.compile("^((?: {4})+|\\t+)(?:[\\w$.\\[\\]]+ )+(func_[0-9]+_[a-zA-Z_]+)\\(");
-    private static final Pattern      FIELD        = Pattern.compile("^((?: {4})+|\\t+)(?:[\\w$.\\[\\]]+ )+(field_[0-9]+_[a-zA-Z_]+) *(?:=|;)");
+    private static final Pattern SRG_FINDER = Pattern.compile("func_[0-9]+_[a-zA-Z_]+|field_[0-9]+_[a-zA-Z_]+|p_[\\w]+_\\d+_\\b");
+    private static final Pattern METHOD = Pattern.compile("^((?: {4})+|\\t+)(?:[\\w$.\\[\\]]+ )+(func_[0-9]+_[a-zA-Z_]+)\\(");
+    private static final Pattern FIELD = Pattern.compile("^((?: {4})+|\\t+)(?:[\\w$.\\[\\]]+ )+(field_[0-9]+_[a-zA-Z_]+) *(?:=|;)");
 
     @Override
-    public void doStuffBefore() throws Exception
-    {
+    public void doStuffBefore() throws Exception {
         // read CSV files
         CSVReader reader = Constants.getReader(getMethodsCsv());
-        for (String[] s : reader.readAll())
-        {
+        for (String[] s : reader.readAll()) {
             methods.put(s[0], s[1]);
             if (!s[3].isEmpty() && addsJavadocs)
                 methodDocs.put(s[0], s[3]);
         }
 
         reader = Constants.getReader(getFieldsCsv());
-        for (String[] s : reader.readAll())
-        {
+        for (String[] s : reader.readAll()) {
             fields.put(s[0], s[1]);
             if (!s[3].isEmpty() && addsJavadocs)
                 fieldDocs.put(s[0], s[3]);
         }
 
         reader = Constants.getReader(getParamsCsv());
-        for (String[] s : reader.readAll())
-        {
+        for (String[] s : reader.readAll()) {
             params.put(s[0], s[1]);
         }
     }
-    
+
     @Override
-    protected boolean storeJarInRam()
-    {
+    protected boolean storeJarInRam() {
         return false;
     }
 
     @Override
-    public String asRead(String name, String text)
-    {
+    public String asRead(String name, String text) {
         ArrayList<String> newLines = new ArrayList<String>();
-        for (String line : Constants.lines(text))
-        {
+        for (String line : Constants.lines(text)) {
             // basically all this code is to find the javadocs for a field ebfore replacing it.
             // if we arnt doing javadocs.. screw dat.
-            if (addsJavadocs)
-            {
+            if (addsJavadocs) {
                 injectJavadoc(newLines, line);
             }
             newLines.add(replaceInLine(line));
@@ -115,51 +102,42 @@ public class RemapSources extends AbstractEditJarTask
         return Joiner.on(Constants.NEWLINE).join(newLines);
     }
 
-    private void injectJavadoc(List<String> newLines, String line)
-    {
+    private void injectJavadoc(List<String> newLines, String line) {
         // methods
         Matcher matcher = METHOD.matcher(line);
-        if (matcher.find())
-        {
+        if (matcher.find()) {
             String javadoc = methodDocs.get(matcher.group(2));
-            if (!Strings.isNullOrEmpty(javadoc))
-            {
+            if (!Strings.isNullOrEmpty(javadoc)) {
                 insetAboveAnnotations(newLines, JavadocAdder.buildJavadoc(matcher.group(1), javadoc, true));
             }
-            
+
             // worked, so return and dont try the fields.
             return;
         }
 
         // fields
         matcher = FIELD.matcher(line);
-        if (matcher.find())
-        {
+        if (matcher.find()) {
             String javadoc = fieldDocs.get(matcher.group(2));
-            if (!Strings.isNullOrEmpty(javadoc))
-            {
+            if (!Strings.isNullOrEmpty(javadoc)) {
                 insetAboveAnnotations(newLines, JavadocAdder.buildJavadoc(matcher.group(1), javadoc, false));
             }
         }
     }
 
-    private static void insetAboveAnnotations(List<String> list, String line)
-    {
+    private static void insetAboveAnnotations(List<String> list, String line) {
         int back = 0;
-        while (list.get(list.size() - 1 - back).trim().startsWith("@"))
-        {
+        while (list.get(list.size() - 1 - back).trim().startsWith("@")) {
             back++;
         }
         list.add(list.size() - back, line);
     }
 
-    private String replaceInLine(String line)
-    {
+    private String replaceInLine(String line) {
         // FAR all methods
         StringBuffer buf = new StringBuffer();
         Matcher matcher = SRG_FINDER.matcher(line);
-        while (matcher.find())
-        {
+        while (matcher.find()) {
             String find = matcher.group();
 
             if (find.startsWith("p_"))
@@ -177,51 +155,45 @@ public class RemapSources extends AbstractEditJarTask
         matcher.appendTail(buf);
         return buf.toString();
     }
-    
-    public File getMethodsCsv()
-    {
+
+    public File getMethodsCsv() {
         return methodsCsv.call();
     }
 
-    public void setMethodsCsv(DelayedFile methodsCsv)
-    {
+    public void setMethodsCsv(DelayedFile methodsCsv) {
         this.methodsCsv = methodsCsv;
     }
 
-    public File getFieldsCsv()
-    {
+    public File getFieldsCsv() {
         return fieldsCsv.call();
     }
 
-    public void setFieldsCsv(DelayedFile fieldsCsv)
-    {
+    public void setFieldsCsv(DelayedFile fieldsCsv) {
         this.fieldsCsv = fieldsCsv;
     }
 
-    public File getParamsCsv()
-    {
+    public File getParamsCsv() {
         return paramsCsv.call();
     }
 
-    public void setParamsCsv(DelayedFile paramsCsv)
-    {
+    public void setParamsCsv(DelayedFile paramsCsv) {
         this.paramsCsv = paramsCsv;
     }
 
-    public boolean isAddsJavadocs()
-    {
+    public boolean isAddsJavadocs() {
         return addsJavadocs;
     }
 
-    public void setAddsJavadocs(boolean javadoc)
-    {
+    public void setAddsJavadocs(boolean javadoc) {
         this.addsJavadocs = javadoc;
     }
-    
-    @Override
-    public void doStuffMiddle(Map<String, String> sourceMap, Map<String, byte[]> resourceMap) throws Exception { }
 
     @Override
-    public void doStuffAfter() throws Exception { }
+    public void doStuffMiddle(Map<String, String> sourceMap, Map<String, byte[]> resourceMap) throws Exception {
+    }
+
+    @Override
+    public void doStuffAfter() throws Exception {
+    }
 
 }

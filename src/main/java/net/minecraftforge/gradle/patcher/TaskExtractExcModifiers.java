@@ -65,7 +65,7 @@ class TaskExtractExcModifiers extends DefaultTask
         
         
         BufferedWriter writer = Files.newWriter(output, Charsets.UTF_8);
-        ZipInputStream zin = new ZipInputStream(new FileInputStream(input));
+        ZipInputStream zin = new ZipInputStream(java.nio.file.Files.newInputStream(input.toPath()));
         ZipEntry entry;
 
         while ((entry = zin.getNextEntry()) != null)

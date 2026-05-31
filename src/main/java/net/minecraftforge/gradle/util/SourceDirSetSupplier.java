@@ -26,22 +26,27 @@ import net.minecraftforge.srg2source.util.io.OutputSupplier;
 import org.gradle.api.file.FileVisitDetails;
 import org.gradle.api.file.FileVisitor;
 import org.gradle.api.file.SourceDirectorySet;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 
-public class SourceDirSetSupplier implements InputSupplier, OutputSupplier
-{
+public class SourceDirSetSupplier implements InputSupplier, OutputSupplier {
     Map<String, File> rootMap = Maps.newHashMap();
 
-    public SourceDirSetSupplier(SourceDirectorySet set)
-    {
+    public SourceDirSetSupplier(SourceDirectorySet set) {
         set.visit(new FileVisitor() {
-            @Override public void visitDir(FileVisitDetails fileVisitDetails) { }
+            @Override
+            public void visitDir(@NotNull FileVisitDetails fileVisitDetails) {
+            }
 
             @Override
-            public void visitFile(FileVisitDetails fileVisitDetails) {
+            public void visitFile(@NotNull FileVisitDetails fileVisitDetails) {
                 String absolute = fileVisitDetails.getFile().getAbsolutePath();
                 String path = fileVisitDetails.getPath();
                 File root = new File(absolute.substring(0, absolute.length() - path.length()));
@@ -51,53 +56,41 @@ public class SourceDirSetSupplier implements InputSupplier, OutputSupplier
     }
 
     @Override
-    public String getRoot(String resource)
-    {
+    public String getRoot(String resource) {
         return null;
     }
 
     @Override
-    public InputStream getInput(String relPath)
-    {
+    public InputStream getInput(String relPath) {
         File f = getFile(relPath);
-        try
-        {
-            return f == null ? null : new FileInputStream(f);
-        }
-        catch (IOException e)
-        {
+        try {
+            return f == null ? null : Files.newInputStream(f.toPath());
+        } catch (IOException e) {
             return null;
         }
     }
 
     @Override
-    public List<String> gatherAll(String endFilter)
-    {
+    public List<String> gatherAll(String endFilter) {
         return Lists.newArrayList(rootMap.keySet());
     }
 
     @Override
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         // pointless
     }
 
     @Override
-    public OutputStream getOutput(String relPath)
-    {
+    public OutputStream getOutput(String relPath) {
         File f = getFile(relPath);
-        try
-        {
-            return f == null ? null : new FileOutputStream(f);
-        }
-        catch (IOException e)
-        {
+        try {
+            return f == null ? null : Files.newOutputStream(f.toPath());
+        } catch (IOException e) {
             return null;
         }
     }
 
-    private File getFile(String path)
-    {
+    private File getFile(String path) {
         File root = rootMap.get(path);
         if (root == null)
             return null;
