@@ -22,6 +22,7 @@ package net.minecraftforge.gradle.user;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -228,6 +229,7 @@ public class TaskSingleReobf extends DefaultTask
             mapping.loadMappings(f);
         }
 
+        // make remapper
         JarRemapper remapper = new JarRemapper(null, mapping);
 
         // load jar
@@ -247,7 +249,7 @@ public class TaskSingleReobf extends DefaultTask
     private void applyExtraTransformers(File inJar, File outJar, List<ReobfTransformer> transformers) throws IOException
     {
         ZipFile in = new ZipFile(inJar);
-        final ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(java.nio.file.Files.newOutputStream(outJar.toPath())));
+        final ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(outJar)));
 
         for (ZipEntry e : Collections.list(in.entries()))
         {
@@ -340,13 +342,13 @@ public class TaskSingleReobf extends DefaultTask
             {
                 for (File nested : getProject().fileTree(f))
                 {
-                    if ("srg".equalsIgnoreCase(Files.getFileExtension(nested.getName())))
+                    if ("srg".equals(Files.getFileExtension(nested.getName()).toLowerCase()))
                     {
                         files.add(nested.getAbsoluteFile());
                     }
                 }
             }
-            else if ("srg".equalsIgnoreCase(Files.getFileExtension(f.getName())))
+            else if ("srg".equals(Files.getFileExtension(f.getName()).toLowerCase()))
             {
                 files.add(f.getAbsoluteFile());
             }
