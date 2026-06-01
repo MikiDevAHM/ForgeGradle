@@ -41,15 +41,43 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 
 public abstract class AbstractEditJarTask extends CachedTask {
+    protected File resolvedInJar;
+    protected File resolvedOutJar;
     @InputFile
     private Object inJar;
-
     @Cached
     @OutputFile
     private Object outJar;
 
-    protected File resolvedInJar;
-    protected File resolvedOutJar;
+    protected static void saveJar(File output, Map<String, String> sourceMap, Map<String, byte[]> resourceMap) throws IOException {
+        output.getParentFile().mkdirs();
+
+        JarOutputStream zout = new JarOutputStream(new FileOutputStream(output));
+
+        // write in resources
+        for (Map.Entry<String, byte[]> entry : resourceMap.entrySet()) {
+            JarEntry jarEntry = new JarEntry(entry.getKey());
+            jarEntry.setCreationTime(FileTime.fromMillis(0L));
+            jarEntry.setLastAccessTime(FileTime.fromMillis(0L));
+            jarEntry.setLastModifiedTime(FileTime.fromMillis(0L));
+            zout.putNextEntry(jarEntry);
+            zout.write(entry.getValue());
+            zout.closeEntry();
+        }
+
+        // write in sources
+        for (Map.Entry<String, String> entry : sourceMap.entrySet()) {
+            JarEntry jarEntry = new JarEntry(entry.getKey());
+            jarEntry.setCreationTime(FileTime.fromMillis(0L));
+            jarEntry.setLastAccessTime(FileTime.fromMillis(0L));
+            jarEntry.setLastModifiedTime(FileTime.fromMillis(0L));
+            zout.putNextEntry(jarEntry);
+            zout.write(entry.getValue().getBytes());
+            zout.closeEntry();
+        }
+
+        zout.close();
+    }
 
     @TaskAction
     public void doTask() throws Throwable {
@@ -148,36 +176,6 @@ public abstract class AbstractEditJarTask extends CachedTask {
         }
 
         zin.close();
-    }
-
-    protected static void saveJar(File output, Map<String, String> sourceMap, Map<String, byte[]> resourceMap) throws IOException {
-        output.getParentFile().mkdirs();
-
-        JarOutputStream zout = new JarOutputStream(new FileOutputStream(output));
-
-        // write in resources
-        for (Map.Entry<String, byte[]> entry : resourceMap.entrySet()) {
-            JarEntry jarEntry = new JarEntry(entry.getKey());
-            jarEntry.setCreationTime(FileTime.fromMillis(0L));
-            jarEntry.setLastAccessTime(FileTime.fromMillis(0L));
-            jarEntry.setLastModifiedTime(FileTime.fromMillis(0L));
-            zout.putNextEntry(jarEntry);
-            zout.write(entry.getValue());
-            zout.closeEntry();
-        }
-
-        // write in sources
-        for (Map.Entry<String, String> entry : sourceMap.entrySet()) {
-            JarEntry jarEntry = new JarEntry(entry.getKey());
-            jarEntry.setCreationTime(FileTime.fromMillis(0L));
-            jarEntry.setLastAccessTime(FileTime.fromMillis(0L));
-            jarEntry.setLastModifiedTime(FileTime.fromMillis(0L));
-            zout.putNextEntry(jarEntry);
-            zout.write(entry.getValue().getBytes());
-            zout.closeEntry();
-        }
-
-        zout.close();
     }
 
     private void copyJar(File input, File output) throws Exception {

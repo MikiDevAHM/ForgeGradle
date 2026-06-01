@@ -19,15 +19,7 @@
  */
 package net.minecraftforge.gradle.user;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import com.google.common.collect.Lists;
-
 import groovy.lang.Closure;
 import net.minecraftforge.gradle.common.BaseExtension;
 import net.minecraftforge.gradle.common.Constants;
@@ -35,22 +27,23 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.tasks.SourceSet;
 
-public class UserBaseExtension extends BaseExtension
-{
-    private HashMap<String, Object> replacements     = new HashMap<String, Object>();
-    private ArrayList<String>       includes         = new ArrayList<String>();
-    private ArrayList<Object>       ats              = new ArrayList<Object>();
-    private ArrayList<Object>       atSources        = new ArrayList<Object>();
-    private boolean                 useDepAts        = false;
-    private String                  runDir           = "run";
-    private boolean                 makeObfSourceJar = true;
-    private List<Object>            clientJvmArgs    = Lists.newArrayList();
-    private List<Object>            clientRunArgs    = Lists.newArrayList();
-    private List<Object>            serverJvmArgs    = Lists.newArrayList();
-    private List<Object>            serverRunArgs    = Lists.newArrayList();
+import java.util.*;
+import java.util.Map.Entry;
 
-    public UserBaseExtension(UserBasePlugin<? extends UserBaseExtension> plugin)
-    {
+public class UserBaseExtension extends BaseExtension {
+    private HashMap<String, Object> replacements = new HashMap<String, Object>();
+    private ArrayList<String> includes = new ArrayList<String>();
+    private ArrayList<Object> ats = new ArrayList<Object>();
+    private ArrayList<Object> atSources = new ArrayList<Object>();
+    private boolean useDepAts = false;
+    private String runDir = "run";
+    private boolean makeObfSourceJar = true;
+    private List<Object> clientJvmArgs = Lists.newArrayList();
+    private List<Object> clientRunArgs = Lists.newArrayList();
+    private List<Object> serverJvmArgs = Lists.newArrayList();
+    private List<Object> serverRunArgs = Lists.newArrayList();
+
+    public UserBaseExtension(UserBasePlugin<? extends UserBaseExtension> plugin) {
         super(plugin);
     }
 
@@ -60,8 +53,7 @@ public class UserBaseExtension extends BaseExtension
      * @param token       The token to replace
      * @param replacement The value to replace with
      */
-    public void replace(Object token, Object replacement)
-    {
+    public void replace(Object token, Object replacement) {
         replacements.put(token.toString(), replacement);
     }
 
@@ -70,10 +62,8 @@ public class UserBaseExtension extends BaseExtension
      *
      * @param map A map of tokens -&gt; replacements
      */
-    public void replace(Map<Object, Object> map)
-    {
-        for (Entry<Object, Object> e : map.entrySet())
-        {
+    public void replace(Map<Object, Object> map) {
+        for (Entry<Object, Object> e : map.entrySet()) {
             replace(e.getKey(), e.getValue());
         }
     }
@@ -83,8 +73,7 @@ public class UserBaseExtension extends BaseExtension
      *
      * @return A map of tokens -&gt; replacements
      */
-    public Map<String, Object> getReplacements()
-    {
+    public Map<String, Object> getReplacements() {
         return replacements;
     }
 
@@ -93,8 +82,7 @@ public class UserBaseExtension extends BaseExtension
      *
      * @return A list of classes
      */
-    public List<String> getIncludes()
-    {
+    public List<String> getIncludes() {
         return includes;
     }
 
@@ -104,8 +92,7 @@ public class UserBaseExtension extends BaseExtension
      *
      * @param pattern The pattern
      */
-    public void replaceIn(String pattern)
-    {
+    public void replaceIn(String pattern) {
         includes.add(pattern);
     }
 
@@ -145,8 +132,7 @@ public class UserBaseExtension extends BaseExtension
      *
      * @param obj The access transformer file
      */
-    public void at(Object obj)
-    {
+    public void at(Object obj) {
         ats.add(obj);
     }
 
@@ -155,8 +141,7 @@ public class UserBaseExtension extends BaseExtension
      *
      * @param obj The access transformer files
      */
-    public void ats(Object... obj)
-    {
+    public void ats(Object... obj) {
         Collections.addAll(ats, obj);
     }
 
@@ -165,8 +150,7 @@ public class UserBaseExtension extends BaseExtension
      *
      * @return A list of access transformers
      */
-    public List<Object> getAccessTransformers()
-    {
+    public List<Object> getAccessTransformers() {
         return ats;
     }
 
@@ -191,8 +175,7 @@ public class UserBaseExtension extends BaseExtension
      *
      * @param obj A location
      */
-    public void atSource(Object obj)
-    {
+    public void atSource(Object obj) {
         atSources.add(obj);
     }
 
@@ -201,8 +184,7 @@ public class UserBaseExtension extends BaseExtension
      *
      * @param obj Locations
      */
-    public void atSources(Object... obj)
-    {
+    public void atSources(Object... obj) {
         Collections.addAll(atSources, obj);
     }
 
@@ -211,8 +193,7 @@ public class UserBaseExtension extends BaseExtension
      *
      * @return A list of AT source locations
      */
-    public List<Object> getAccessTransformerSources()
-    {
+    public List<Object> getAccessTransformerSources() {
         return atSources;
     }
 
@@ -221,16 +202,14 @@ public class UserBaseExtension extends BaseExtension
      *
      * @return A list of AT source locations
      */
-    public FileCollection getResolvedAccessTransformerSources()
-    {
+    public FileCollection getResolvedAccessTransformerSources() {
         return resolveFiles(atSources);
     }
 
     /**
      * @return Whether or not to grab Access Transformers from dependencies
      */
-    public boolean isUseDepAts()
-    {
+    public boolean isUseDepAts() {
         return useDepAts;
     }
 
@@ -239,20 +218,8 @@ public class UserBaseExtension extends BaseExtension
      *
      * @param useDepAts {@code true} if dependencies should be searched
      */
-    public void setUseDepAts(boolean useDepAts)
-    {
+    public void setUseDepAts(boolean useDepAts) {
         this.useDepAts = useDepAts;
-    }
-
-    /**
-     * Set the run location for Minecraft
-     *
-     * @param value The run location
-     */
-    public void setRunDir(String value)
-    {
-        this.runDir = value;
-        replacer.putReplacement(UserConstants.REPLACE_RUN_DIR, runDir);
     }
 
     /**
@@ -260,16 +227,24 @@ public class UserBaseExtension extends BaseExtension
      *
      * @return The run location
      */
-    public String getRunDir()
-    {
+    public String getRunDir() {
         return this.runDir;
+    }
+
+    /**
+     * Set the run location for Minecraft
+     *
+     * @param value The run location
+     */
+    public void setRunDir(String value) {
+        this.runDir = value;
+        replacer.putReplacement(UserConstants.REPLACE_RUN_DIR, runDir);
     }
 
     /**
      * @return {@code true} if a srg-named sources jar will be created
      */
-    public boolean getMakeObfSourceJar()
-    {
+    public boolean getMakeObfSourceJar() {
         return makeObfSourceJar;
     }
 
@@ -278,8 +253,7 @@ public class UserBaseExtension extends BaseExtension
      *
      * @param makeObfSourceJar if a srg-named sources jar should be created
      */
-    public void setMakeObfSourceJar(boolean makeObfSourceJar)
-    {
+    public void setMakeObfSourceJar(boolean makeObfSourceJar) {
         this.makeObfSourceJar = makeObfSourceJar;
     }
 
@@ -288,14 +262,8 @@ public class UserBaseExtension extends BaseExtension
      *
      * @return The client JVM args
      */
-    public List<Object> getClientJvmArgs()
-    {
+    public List<Object> getClientJvmArgs() {
         return clientJvmArgs;
-    }
-
-    public List<String> getResolvedClientJvmArgs()
-    {
-        return resolve(getClientJvmArgs());
     }
 
     /**
@@ -303,9 +271,12 @@ public class UserBaseExtension extends BaseExtension
      *
      * @param clientJvmArgs The client JVM args
      */
-    public void setClientJvmArgs(List<Object> clientJvmArgs)
-    {
+    public void setClientJvmArgs(List<Object> clientJvmArgs) {
         this.clientJvmArgs = clientJvmArgs;
+    }
+
+    public List<String> getResolvedClientJvmArgs() {
+        return resolve(getClientJvmArgs());
     }
 
     /**
@@ -313,14 +284,8 @@ public class UserBaseExtension extends BaseExtension
      *
      * @return The client run args
      */
-    public List<Object> getClientRunArgs()
-    {
+    public List<Object> getClientRunArgs() {
         return clientRunArgs;
-    }
-
-    public List<String> getResolvedClientRunArgs()
-    {
-        return resolve(getClientRunArgs());
     }
 
     /**
@@ -328,9 +293,12 @@ public class UserBaseExtension extends BaseExtension
      *
      * @param clientRunArgs The client run args
      */
-    public void setClientRunArgs(List<Object> clientRunArgs)
-    {
+    public void setClientRunArgs(List<Object> clientRunArgs) {
         this.clientRunArgs = clientRunArgs;
+    }
+
+    public List<String> getResolvedClientRunArgs() {
+        return resolve(getClientRunArgs());
     }
 
     /**
@@ -338,14 +306,8 @@ public class UserBaseExtension extends BaseExtension
      *
      * @return The server JVM args
      */
-    public List<Object> getServerJvmArgs()
-    {
+    public List<Object> getServerJvmArgs() {
         return serverJvmArgs;
-    }
-
-    public List<String> getResolvedServerJvmArgs()
-    {
-        return resolve(getServerJvmArgs());
     }
 
     /**
@@ -353,9 +315,12 @@ public class UserBaseExtension extends BaseExtension
      *
      * @param serverJvmArgs The server JVM args
      */
-    public void setServerJvmArgs(List<Object> serverJvmArgs)
-    {
+    public void setServerJvmArgs(List<Object> serverJvmArgs) {
         this.serverJvmArgs = serverJvmArgs;
+    }
+
+    public List<String> getResolvedServerJvmArgs() {
+        return resolve(getServerJvmArgs());
     }
 
     /**
@@ -363,14 +328,8 @@ public class UserBaseExtension extends BaseExtension
      *
      * @return The server run args
      */
-    public List<Object> getServerRunArgs()
-    {
+    public List<Object> getServerRunArgs() {
         return serverRunArgs;
-    }
-
-    public List<String> getResolvedServerRunArgs()
-    {
-        return resolve(getServerRunArgs());
     }
 
     /**
@@ -378,31 +337,30 @@ public class UserBaseExtension extends BaseExtension
      *
      * @param serverRunArgs The server run args
      */
-    public void setServerRunArgs(List<Object> serverRunArgs)
-    {
+    public void setServerRunArgs(List<Object> serverRunArgs) {
         this.serverRunArgs = serverRunArgs;
     }
 
-    private List<String> resolve(List<Object> list)
-    {
+    public List<String> getResolvedServerRunArgs() {
+        return resolve(getServerRunArgs());
+    }
+
+    private List<String> resolve(List<Object> list) {
         List<String> out = Lists.newArrayListWithCapacity(list.size());
-        for (Object o : list)
-        {
+        for (Object o : list) {
             out.add(Constants.resolveString(o));
         }
         return out;
     }
 
-    private Object resolveFile(Object obj)
-    {
+    private Object resolveFile(Object obj) {
         while (obj instanceof Closure)
             obj = ((Closure<?>) obj).call();
 
         SourceSet set = null;
         if (obj instanceof SourceSet)
             set = (SourceSet) obj;
-        else if (obj instanceof String)
-        {
+        else if (obj instanceof String) {
             JavaPluginExtension javaConv = (JavaPluginExtension) project.getExtensions().getByName("java");
             set = javaConv.getSourceSets().findByName((String) obj);
         }
@@ -410,8 +368,7 @@ public class UserBaseExtension extends BaseExtension
         return (set != null) ? set.getResources() : obj;
     }
 
-    protected FileCollection resolveFiles(List<Object> objects)
-    {
+    protected FileCollection resolveFiles(List<Object> objects) {
         Object[] files = new Object[objects.size()];
         int i = 0;
         for (Object obj : objects)

@@ -33,13 +33,18 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.*;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
 
 class TaskReobfuscate extends DefaultTask {
+    @InputFiles
+    private final List<Object> libs = Lists.newArrayList();
     //@formatter:off
     @InputFile  private Object inJar;
     @InputFile  private Object preFFJar;
@@ -47,14 +52,10 @@ class TaskReobfuscate extends DefaultTask {
     @InputFile  private Object exc;
     @InputFile  private Object methodsCsv;
     @InputFile  private Object fieldsCsv;
-    @OutputFile private Object outJar;
     //@formatter: on
-
+    @OutputFile private Object outJar;
     @Input
     private LinkedList<String> extraSrg = new LinkedList<String>();
-
-    @InputFiles
-    private final List<Object> libs = Lists.newArrayList();
 
     //@formatter:off
     public TaskReobfuscate() { super(); }

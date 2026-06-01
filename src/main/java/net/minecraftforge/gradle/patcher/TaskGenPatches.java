@@ -43,30 +43,18 @@ import java.io.*;
 import java.util.*;
 
 class TaskGenPatches extends DefaultTask {
-    //@formatter:off
-    @OutputDirectory private Object patchDir;
     private final List<Object>      originals = new LinkedList<Object>();
     private final List<Object>      changed = new LinkedList<Object>();
+    private final Set<File> created = new HashSet<File>();
+    //@formatter:off
+    @OutputDirectory private Object patchDir;
     @Input private String           originalPrefix = "";
+    //@formatter:on
     @Input private String           changedPrefix = "";
     //@formatter:on
 
     //@formatter:off
     public TaskGenPatches() { super(); }
-    //@formatter:on
-
-    private final Set<File> created = new HashSet<File>();
-
-    @TaskAction
-    public void doTask() throws IOException, PatchException {
-        created.clear();
-        getPatchDir().mkdirs();
-
-        // fix and create patches.
-        processFiles(getSupplier(getOriginalSource()), getSupplier(getChangedSource()));
-
-        removeOld(getPatchDir());
-    }
 
     private static InputSupplier getSupplier(List<File> files) throws IOException {
         SequencedInputSupplier supplier = new SequencedInputSupplier(files.size() + 1);
@@ -82,6 +70,17 @@ class TaskGenPatches extends DefaultTask {
         }
 
         return supplier;
+    }
+
+    @TaskAction
+    public void doTask() throws IOException, PatchException {
+        created.clear();
+        getPatchDir().mkdirs();
+
+        // fix and create patches.
+        processFiles(getSupplier(getOriginalSource()), getSupplier(getChangedSource()));
+
+        removeOld(getPatchDir());
     }
 
     private void removeOld(File dir) throws IOException {

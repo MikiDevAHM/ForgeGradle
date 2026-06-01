@@ -39,11 +39,11 @@ import java.net.URL;
 
 public class EtagDownloadTask extends DefaultTask {
     @Input
+    boolean dieWithError;
+    @Input
     private Object url;
     @OutputFile
     private Object file;
-    @Input
-    boolean dieWithError;
 
     public EtagDownloadTask() {
         super();

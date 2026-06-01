@@ -49,19 +49,17 @@ import java.util.regex.Pattern;
 import java.util.zip.*;
 
 public class TaskApplyBinPatches extends CachedTask {
+    private final HashMap<String, ClassPatch> patchlist = Maps.newHashMap();
+    private final GDiffPatcher patcher = new GDiffPatcher();
     //@formatter:off
     @InputFile  Object inJar;
     @InputFile  Object classJar;
+    //@formatter:on
     @InputFile  Object resourceJar;
     @InputFile  Object patches;
-    //@formatter:on
-
     @OutputFile
     @Cached
     Object outJar;
-
-    private final HashMap<String, ClassPatch> patchlist = Maps.newHashMap();
-    private final GDiffPatcher patcher = new GDiffPatcher();
 
     @TaskAction
     public void doTask() throws IOException {

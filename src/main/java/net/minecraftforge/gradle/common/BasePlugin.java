@@ -64,12 +64,66 @@ import java.util.Map;
 import static net.minecraftforge.gradle.common.Constants.*;
 
 public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Project> {
+    private static boolean displayBanner = true;
     public Project project;
     public BasePlugin<?> otherPlugin;
     public ReplacementProvider replacer = new ReplacementProvider();
-
+    // DELAYED STUFF ONLY ------------------------------------------------------------------------
+    private final LoadingCache<String, TokenReplacer> replacerCache = CacheBuilder.newBuilder()
+            .weakValues()
+            .build(
+                    new CacheLoader<String, TokenReplacer>() {
+                        public TokenReplacer load(String key) {
+                            return new TokenReplacer(replacer, key);
+                        }
+                    });
+    private final LoadingCache<String, DelayedString> stringCache = CacheBuilder.newBuilder()
+            .weakValues()
+            .build(
+                    new CacheLoader<String, DelayedString>() {
+                        public DelayedString load(String key) {
+                            return new DelayedString(CacheLoader.class, replacerCache.getUnchecked(key));
+                        }
+                    });
+    private final LoadingCache<String, DelayedFile> fileCache = CacheBuilder.newBuilder()
+            .weakValues()
+            .build(
+                    new CacheLoader<String, DelayedFile>() {
+                        public DelayedFile load(String key) {
+                            return new DelayedFile(CacheLoader.class, project, replacerCache.getUnchecked(key));
+                        }
+                    });
     private Map<String, ManifestVersion> mcManifest;
     private Version mcVersionJson;
+
+    public static <T extends Task> T maybeMakeTask(Project proj, String name, Class<T> type) {
+        return proj.getTasks().maybeCreate(name, type);
+    }
+
+    public static <T extends Task> T makeTask(Project proj, String name, Class<T> type) {
+        return proj.getTasks().create(name, type);
+    }
+
+    public static Project buildProject(File buildFile, Project parent) {
+        ProjectBuilder builder = ProjectBuilder.builder();
+        if (buildFile != null) {
+            builder = builder.withProjectDir(buildFile.getParentFile()).withName(buildFile.getParentFile().getName());
+        } else {
+            builder = builder.withProjectDir(new File("."));
+        }
+
+        if (parent != null) {
+            builder = builder.withParent(parent);
+        }
+
+        Project project = builder.build();
+
+        if (buildFile != null) {
+            project.apply(ImmutableMap.of("from", buildFile.getAbsolutePath()));
+        }
+
+        return project;
+    }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
@@ -167,8 +221,6 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
     }
 
     public abstract void applyPlugin();
-
-    private static boolean displayBanner = true;
 
     private void getRemoteJsons() {
         // MCP json
@@ -494,35 +546,6 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
         return maybeMakeTask(project, name, type);
     }
 
-    public static <T extends Task> T maybeMakeTask(Project proj, String name, Class<T> type) {
-        return proj.getTasks().maybeCreate(name, type);
-    }
-
-    public static <T extends Task> T makeTask(Project proj, String name, Class<T> type) {
-        return proj.getTasks().create(name, type);
-    }
-
-    public static Project buildProject(File buildFile, Project parent) {
-        ProjectBuilder builder = ProjectBuilder.builder();
-        if (buildFile != null) {
-            builder = builder.withProjectDir(buildFile.getParentFile()).withName(buildFile.getParentFile().getName());
-        } else {
-            builder = builder.withProjectDir(new File("."));
-        }
-
-        if (parent != null) {
-            builder = builder.withParent(parent);
-        }
-
-        Project project = builder.build();
-
-        if (buildFile != null) {
-            project.apply(ImmutableMap.of("from", buildFile.getAbsolutePath()));
-        }
-
-        return project;
-    }
-
     public void applyExternalPlugin(String plugin) {
         project.apply(ImmutableMap.of("plugin", plugin));
     }
@@ -680,32 +703,6 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
 
         return version;
     }
-
-    // DELAYED STUFF ONLY ------------------------------------------------------------------------
-    private final LoadingCache<String, TokenReplacer> replacerCache = CacheBuilder.newBuilder()
-            .weakValues()
-            .build(
-                    new CacheLoader<String, TokenReplacer>() {
-                        public TokenReplacer load(String key) {
-                            return new TokenReplacer(replacer, key);
-                        }
-                    });
-    private final LoadingCache<String, DelayedString> stringCache = CacheBuilder.newBuilder()
-            .weakValues()
-            .build(
-                    new CacheLoader<String, DelayedString>() {
-                        public DelayedString load(String key) {
-                            return new DelayedString(CacheLoader.class, replacerCache.getUnchecked(key));
-                        }
-                    });
-    private final LoadingCache<String, DelayedFile> fileCache = CacheBuilder.newBuilder()
-            .weakValues()
-            .build(
-                    new CacheLoader<String, DelayedFile>() {
-                        public DelayedFile load(String key) {
-                            return new DelayedFile(CacheLoader.class, project, replacerCache.getUnchecked(key));
-                        }
-                    });
 
     public DelayedString delayedString(String path) {
         return stringCache.getUnchecked(path);

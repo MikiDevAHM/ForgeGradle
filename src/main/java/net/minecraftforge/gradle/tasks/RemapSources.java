@@ -37,27 +37,30 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RemapSources extends AbstractEditJarTask {
-    @InputFile
-    private DelayedFile methodsCsv;
-
-    @InputFile
-    private DelayedFile fieldsCsv;
-
-    @InputFile
-    private DelayedFile paramsCsv;
-
-    @Input
-    private boolean addsJavadocs = true;
-
+    private static final Pattern SRG_FINDER = Pattern.compile("func_[0-9]+_[a-zA-Z_]+|field_[0-9]+_[a-zA-Z_]+|p_[\\w]+_\\d+_\\b");
+    private static final Pattern METHOD = Pattern.compile("^((?: {4})+|\\t+)(?:[\\w$.\\[\\]]+ )+(func_[0-9]+_[a-zA-Z_]+)\\(");
+    private static final Pattern FIELD = Pattern.compile("^((?: {4})+|\\t+)(?:[\\w$.\\[\\]]+ )+(field_[0-9]+_[a-zA-Z_]+) *(?:=|;)");
     private final Map<String, String> methods = Maps.newHashMap();
     private final Map<String, String> methodDocs = Maps.newHashMap();
     private final Map<String, String> fields = Maps.newHashMap();
     private final Map<String, String> fieldDocs = Maps.newHashMap();
     private final Map<String, String> params = Maps.newHashMap();
+    @InputFile
+    private DelayedFile methodsCsv;
+    @InputFile
+    private DelayedFile fieldsCsv;
+    @InputFile
+    private DelayedFile paramsCsv;
+    @Input
+    private boolean addsJavadocs = true;
 
-    private static final Pattern SRG_FINDER = Pattern.compile("func_[0-9]+_[a-zA-Z_]+|field_[0-9]+_[a-zA-Z_]+|p_[\\w]+_\\d+_\\b");
-    private static final Pattern METHOD = Pattern.compile("^((?: {4})+|\\t+)(?:[\\w$.\\[\\]]+ )+(func_[0-9]+_[a-zA-Z_]+)\\(");
-    private static final Pattern FIELD = Pattern.compile("^((?: {4})+|\\t+)(?:[\\w$.\\[\\]]+ )+(field_[0-9]+_[a-zA-Z_]+) *(?:=|;)");
+    private static void insetAboveAnnotations(List<String> list, String line) {
+        int back = 0;
+        while (list.get(list.size() - 1 - back).trim().startsWith("@")) {
+            back++;
+        }
+        list.add(list.size() - back, line);
+    }
 
     @Override
     public void doStuffBefore() throws Exception {
@@ -123,14 +126,6 @@ public class RemapSources extends AbstractEditJarTask {
                 insetAboveAnnotations(newLines, JavadocAdder.buildJavadoc(matcher.group(1), javadoc, false));
             }
         }
-    }
-
-    private static void insetAboveAnnotations(List<String> list, String line) {
-        int back = 0;
-        while (list.get(list.size() - 1 - back).trim().startsWith("@")) {
-            back++;
-        }
-        list.add(list.size() - back, line);
     }
 
     private String replaceInLine(String line) {

@@ -293,12 +293,11 @@ public class ReobfExceptor {
         private final Map<String, String> map = Maps.newHashMap();
         private final List<String> interfaces = Lists.newArrayList();
         private final Map<String, AccessInfo> access = Maps.newHashMap();
+        private String className;
 
         public JarInfo() {
             super(Opcodes.ASM4, null);
         }
-
-        private String className;
 
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] ints) {

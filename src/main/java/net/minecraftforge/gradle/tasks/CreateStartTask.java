@@ -54,21 +54,35 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 public class CreateStartTask extends CachedTask {
+    private static final String EXTRA_LINES = "//@@EXTRALINES@@";
+    private final Set<String> classpath = Sets.newHashSet();
     HashMap<String, String> resources = Maps.newHashMap();
-
     HashMap<String, Object> replacements = Maps.newHashMap();
-
     List<String> extraLines = Lists.newArrayList();
-
     @Cached
     @OutputDirectory
     private Object startOut;
-
-    private final Set<String> classpath = Sets.newHashSet();
     @Input
     private boolean compile;
 
-    private static final String EXTRA_LINES = "//@@EXTRALINES@@";
+    public static AntBuilder setupAnt(Task task) {
+        AntBuilder ant = task.getAnt();
+        LogLevel startLevel = task.getProject().getGradle().getStartParameter().getLogLevel();
+        if (startLevel.compareTo(LogLevel.LIFECYCLE) >= 0) {
+            GradleVersion v2_14 = GradleVersion.version("2.14");
+            if (GradleVersion.current().compareTo(v2_14) >= 0) {
+                ant.setLifecycleLogLevel(AntMessagePriority.ERROR);
+            } else {
+                try {
+                    LoggingManager.class.getMethod("setLevel", LogLevel.class).invoke(task.getLogging(), LogLevel.ERROR);
+                } catch (Exception e) {
+                    //Couldn't find it? We are on some weird version oh well.
+                    task.getLogger().info("Could not set log level:", e);
+                }
+            }
+        }
+        return ant;
+    }
 
     @TaskAction
     public void doStuff() throws IOException {
@@ -145,25 +159,6 @@ public class CreateStartTask extends CachedTask {
             });
         }
 
-    }
-
-    public static AntBuilder setupAnt(Task task) {
-        AntBuilder ant = task.getAnt();
-        LogLevel startLevel = task.getProject().getGradle().getStartParameter().getLogLevel();
-        if (startLevel.compareTo(LogLevel.LIFECYCLE) >= 0) {
-            GradleVersion v2_14 = GradleVersion.version("2.14");
-            if (GradleVersion.current().compareTo(v2_14) >= 0) {
-                ant.setLifecycleLogLevel(AntMessagePriority.ERROR);
-            } else {
-                try {
-                    LoggingManager.class.getMethod("setLevel", LogLevel.class).invoke(task.getLogging(), LogLevel.ERROR);
-                } catch (Exception e) {
-                    //Couldn't find it? We are on some weird version oh well.
-                    task.getLogger().info("Could not set log level:", e);
-                }
-            }
-        }
-        return ant;
     }
 
     @SuppressWarnings("rawtypes")

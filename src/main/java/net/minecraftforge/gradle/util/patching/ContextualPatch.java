@@ -89,14 +89,6 @@ public final class ContextualPatch {
     private boolean patchLineRead;
     private int lastPatchedLine;    // the last line that was successfuly patched
 
-    public static ContextualPatch create(File patchFile, File context) {
-        return new ContextualPatch(patchFile, context);
-    }
-
-    public static ContextualPatch create(String patchString, IContextProvider context) {
-        return new ContextualPatch(patchString, context);
-    }
-
     private ContextualPatch(String patchString, IContextProvider context) {
         this.patchString = patchString;
         this.contextProvider = context;
@@ -107,6 +99,14 @@ public final class ContextualPatch {
     private ContextualPatch(File patchFile, File context) {
         this.patchFile = patchFile;
         this.suggestedContext = context;
+    }
+
+    public static ContextualPatch create(File patchFile, File context) {
+        return new ContextualPatch(patchFile, context);
+    }
+
+    public static ContextualPatch create(String patchString, IContextProvider context) {
+        return new ContextualPatch(patchString, context);
     }
 
     public ContextualPatch setMaxFuzz(int maxFuzz) {
@@ -844,135 +844,6 @@ public final class ContextualPatch {
         return new File(context, patch.targetPath);
     }
 
-    private static class SinglePatch {
-        //String targetIndex;
-        String targetPath;
-        Hunk[] hunks;
-        //boolean targetMustExist = true;     // == false if the patch contains one hunk with just additions ('+' lines)
-        File targetFile;                 // computed later
-        boolean noEndingNewline;            // resulting file should not end with a newline
-        boolean binary;                  // binary patches contain one encoded Hunk
-        Mode mode;
-    }
-
-    enum Mode {
-        /**
-         * Update to existing file
-         */
-        CHANGE,
-        /**
-         * Adding a new file
-         */
-        ADD,
-        /**
-         * Deleting an existing file
-         */
-        DELETE
-    }
-
-    public enum PatchStatus {
-        Patched(true),
-        Missing(false),
-        Failure(false),
-        Skipped(true),
-        Fuzzed(true);
-
-        private final boolean success;
-
-        PatchStatus(boolean success) {
-            this.success = success;
-        }
-
-        public boolean isSuccess() {
-            return success;
-        }
-    }
-
-    public static final class PatchReport {
-
-        private final String target;
-        private final boolean binary;
-        private final PatchStatus status;
-        private final Throwable failure;
-        private final List<HunkReport> hunks;
-
-        PatchReport(String target, boolean binary, PatchStatus status, Throwable failure, List<HunkReport> hunks) {
-            this.target = target;
-            this.binary = binary;
-            this.status = status;
-            this.failure = failure;
-            this.hunks = hunks;
-        }
-
-        public String getTarget() {
-            return target;
-        }
-
-        public boolean isBinary() {
-            return binary;
-        }
-
-        public PatchStatus getStatus() {
-            return status;
-        }
-
-        public Throwable getFailure() {
-            return failure;
-        }
-
-        public List<HunkReport> getHunks() {
-            return hunks;
-        }
-    }
-
-    public interface IContextProvider {
-        List<String> getData(String target);
-
-        void setData(String target, List<String> data);
-    }
-
-    public static class HunkReport {
-        private final PatchStatus status;
-        private final Throwable failure;
-        private final int index;
-        private final int fuzz;
-        private final int hunkID;
-        public Hunk hunk;
-
-        public HunkReport(PatchStatus status, Throwable failure, int index, int fuzz, int hunkID) {
-            this.status = status;
-            this.failure = failure;
-            this.index = index;
-            this.fuzz = fuzz;
-            this.hunkID = hunkID;
-        }
-
-        public HunkReport(PatchStatus status, Throwable failure, int index, int fuzz, int hunkID, Hunk hunk) {
-            this(status, failure, index, fuzz, hunkID);
-            this.hunk = hunk;
-        }
-
-        public PatchStatus getStatus() {
-            return status;
-        }
-
-        public Throwable getFailure() {
-            return failure;
-        }
-
-        public int getIndex() {
-            return index;
-        }
-
-        public int getFuzz() {
-            return fuzz;
-        }
-
-        public int getHunkID() {
-            return hunkID;
-        }
-    }
-
     private boolean similar(String target, String hunk, char lineType) {
         if (c14nAccess) {
             if (c14nWhitespace) {
@@ -1026,5 +897,134 @@ public final class ContextualPatch {
     private boolean isLabel(String data) //Damn FernFlower
     {
         return data.startsWith("label");
+    }
+
+    enum Mode {
+        /**
+         * Update to existing file
+         */
+        CHANGE,
+        /**
+         * Adding a new file
+         */
+        ADD,
+        /**
+         * Deleting an existing file
+         */
+        DELETE
+    }
+
+    public enum PatchStatus {
+        Patched(true),
+        Missing(false),
+        Failure(false),
+        Skipped(true),
+        Fuzzed(true);
+
+        private final boolean success;
+
+        PatchStatus(boolean success) {
+            this.success = success;
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+    }
+
+    public interface IContextProvider {
+        List<String> getData(String target);
+
+        void setData(String target, List<String> data);
+    }
+
+    private static class SinglePatch {
+        //String targetIndex;
+        String targetPath;
+        Hunk[] hunks;
+        //boolean targetMustExist = true;     // == false if the patch contains one hunk with just additions ('+' lines)
+        File targetFile;                 // computed later
+        boolean noEndingNewline;            // resulting file should not end with a newline
+        boolean binary;                  // binary patches contain one encoded Hunk
+        Mode mode;
+    }
+
+    public static final class PatchReport {
+
+        private final String target;
+        private final boolean binary;
+        private final PatchStatus status;
+        private final Throwable failure;
+        private final List<HunkReport> hunks;
+
+        PatchReport(String target, boolean binary, PatchStatus status, Throwable failure, List<HunkReport> hunks) {
+            this.target = target;
+            this.binary = binary;
+            this.status = status;
+            this.failure = failure;
+            this.hunks = hunks;
+        }
+
+        public String getTarget() {
+            return target;
+        }
+
+        public boolean isBinary() {
+            return binary;
+        }
+
+        public PatchStatus getStatus() {
+            return status;
+        }
+
+        public Throwable getFailure() {
+            return failure;
+        }
+
+        public List<HunkReport> getHunks() {
+            return hunks;
+        }
+    }
+
+    public static class HunkReport {
+        private final PatchStatus status;
+        private final Throwable failure;
+        private final int index;
+        private final int fuzz;
+        private final int hunkID;
+        public Hunk hunk;
+
+        public HunkReport(PatchStatus status, Throwable failure, int index, int fuzz, int hunkID) {
+            this.status = status;
+            this.failure = failure;
+            this.index = index;
+            this.fuzz = fuzz;
+            this.hunkID = hunkID;
+        }
+
+        public HunkReport(PatchStatus status, Throwable failure, int index, int fuzz, int hunkID, Hunk hunk) {
+            this(status, failure, index, fuzz, hunkID);
+            this.hunk = hunk;
+        }
+
+        public PatchStatus getStatus() {
+            return status;
+        }
+
+        public Throwable getFailure() {
+            return failure;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public int getFuzz() {
+            return fuzz;
+        }
+
+        public int getHunkID() {
+            return hunkID;
+        }
     }
 }

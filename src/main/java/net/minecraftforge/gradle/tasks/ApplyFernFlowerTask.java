@@ -64,6 +64,22 @@ public class ApplyFernFlowerTask extends CachedTask {
     @Internal
     private FileCollection classpath;
 
+    private static @NotNull Map<String, Object> getStringObjectMap() {
+        Map<String, Object> mapOptions = new HashMap<String, Object>();
+        mapOptions.put(IFernflowerPreferences.DECOMPILE_INNER, "1");
+        mapOptions.put(IFernflowerPreferences.DECOMPILE_GENERIC_SIGNATURES, "1");
+        mapOptions.put(IFernflowerPreferences.ASCII_STRING_CHARACTERS, "1");
+        mapOptions.put(IFernflowerPreferences.INCLUDE_ENTIRE_CLASSPATH, "1");
+        mapOptions.put(IFernflowerPreferences.DECOMPILE_GENERIC_SIGNATURES, "1");
+        mapOptions.put(IFernflowerPreferences.REMOVE_SYNTHETIC, "1");
+        mapOptions.put(IFernflowerPreferences.REMOVE_BRIDGE, "1");
+        mapOptions.put(IFernflowerPreferences.LITERALS_AS_IS, "0");
+        mapOptions.put(IFernflowerPreferences.UNIT_TEST_MODE, "0");
+        mapOptions.put(IFernflowerPreferences.MAX_PROCESSING_METHOD, "0");
+        mapOptions.put(DecompilerContext.RENAMER_FACTORY, AdvancedJadRenamerFactory.class.getName());
+        return mapOptions;
+    }
+
     @TaskAction
     public void applyFernFlower() throws IOException {
         final File in = getInJar();
@@ -86,20 +102,28 @@ public class ApplyFernFlowerTask extends CachedTask {
         Constants.copyFile(tempJar, out);
     }
 
-    private static @NotNull Map<String, Object> getStringObjectMap() {
-        Map<String, Object> mapOptions = new HashMap<String, Object>();
-        mapOptions.put(IFernflowerPreferences.DECOMPILE_INNER, "1");
-        mapOptions.put(IFernflowerPreferences.DECOMPILE_GENERIC_SIGNATURES, "1");
-        mapOptions.put(IFernflowerPreferences.ASCII_STRING_CHARACTERS, "1");
-        mapOptions.put(IFernflowerPreferences.INCLUDE_ENTIRE_CLASSPATH, "1");
-        mapOptions.put(IFernflowerPreferences.DECOMPILE_GENERIC_SIGNATURES, "1");
-        mapOptions.put(IFernflowerPreferences.REMOVE_SYNTHETIC, "1");
-        mapOptions.put(IFernflowerPreferences.REMOVE_BRIDGE, "1");
-        mapOptions.put(IFernflowerPreferences.LITERALS_AS_IS, "0");
-        mapOptions.put(IFernflowerPreferences.UNIT_TEST_MODE, "0");
-        mapOptions.put(IFernflowerPreferences.MAX_PROCESSING_METHOD, "0");
-        mapOptions.put(DecompilerContext.RENAMER_FACTORY, AdvancedJadRenamerFactory.class.getName());
-        return mapOptions;
+    public File getInJar() {
+        return getProject().file(inJar);
+    }
+
+    public void setInJar(Object inJar) {
+        this.inJar = inJar;
+    }
+
+    public File getOutJar() {
+        return getProject().file(outJar);
+    }
+
+    public void setOutJar(Object outJar) {
+        this.outJar = outJar;
+    }
+
+    public FileCollection getClasspath() {
+        return classpath;
+    }
+
+    public void setClasspath(FileCollection classpath) {
+        this.classpath = classpath;
     }
 
     public static class AdvancedJadRenamerFactory implements IVariableNamingFactory {
@@ -111,8 +135,8 @@ public class ApplyFernFlowerTask extends CachedTask {
     }
 
     public static class AdvancedJadRenamer extends JADNameProvider {
-        private final StructMethod wrapper;
         private static final Pattern p = Pattern.compile("func_(\\d+)_.*");
+        private final StructMethod wrapper;
 
         public AdvancedJadRenamer(StructMethod wrapper) {
             super(wrapper);
@@ -294,30 +318,6 @@ public class ApplyFernFlowerTask extends CachedTask {
             }
         }
 
-    }
-
-    public File getInJar() {
-        return getProject().file(inJar);
-    }
-
-    public void setInJar(Object inJar) {
-        this.inJar = inJar;
-    }
-
-    public File getOutJar() {
-        return getProject().file(outJar);
-    }
-
-    public void setOutJar(Object outJar) {
-        this.outJar = outJar;
-    }
-
-    public FileCollection getClasspath() {
-        return classpath;
-    }
-
-    public void setClasspath(FileCollection classpath) {
-        this.classpath = classpath;
     }
 
 

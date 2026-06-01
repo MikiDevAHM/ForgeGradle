@@ -102,20 +102,20 @@ public class PatcherProject implements Serializable {
      * Sets the project after which this project will apply its patches
      * All patches apply on top of the clean project anyways.
      *
-     * @param patchAfter project to patch after
+     * @param patcher project to patch after
      */
-    public void patchAfter(String patchAfter) {
-        setPatchAfter(patchAfter);
+    public void setPatchAfter(PatcherProject patcher) {
+        this.patchAfter = patcher.getName();
     }
 
     /**
      * Sets the project after which this project will apply its patches
      * All patches apply on top of the clean project anyways.
      *
-     * @param patcher project to patch after
+     * @param patchAfter project to patch after
      */
-    public void setPatchAfter(PatcherProject patcher) {
-        this.patchAfter = patcher.getName();
+    public void patchAfter(String patchAfter) {
+        setPatchAfter(patchAfter);
     }
 
     /**

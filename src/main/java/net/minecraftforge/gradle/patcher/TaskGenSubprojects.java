@@ -44,19 +44,76 @@ import java.util.Map;
 import static net.minecraftforge.gradle.common.Constants.NEWLINE;
 
 class TaskGenSubprojects extends DefaultTask {
-    //@formatter:off
-    @Input private String                 javaLevel;
-    private Object                        workspaceDir;
+    private static final String           INDENT       = "    "; // 4 spaces
     @Input private final String           resource;
     @Input private final List<Repo>       repositories = Lists.newArrayList();
     @Input private final List<String>     dependencies = Lists.newArrayList();
     private final Map<String, DevProject> projects     = Maps.newHashMap();
-    private static final String           INDENT       = "    "; // 4 spaces
+    //@formatter:off
+    @Input private String                 javaLevel;
+    private Object                        workspaceDir;
     //@formatter:on
 
     public TaskGenSubprojects() throws IOException {
         super();
         resource = Resources.toString(Resources.getResource(TaskGenSubprojects.class, "globalGradle"), Constants.CHARSET);
+    }
+
+    private static void generateRootSettings(File output, Collection<String> projects) throws IOException {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("include '");
+        Joiner.on("', '").appendTo(builder, projects);
+        builder.append("'");
+
+        Files.write(builder.toString(), output, Constants.CHARSET);
+    }
+
+    private static void generateProjectBuild(URI workspace, File output, DevProject project) throws IOException {
+        StringBuilder builder = new StringBuilder();
+
+        File src = project.getExternalSrcDir();
+        File res = project.getExternalResDir();
+        File testSrc = project.getExternalTestSrcDir();
+        File testRes = project.getExternalTestResDir();
+
+        // @formatter:off
+
+        // why use relatvie paths? so the eclipse hack below can work correctly.
+        // add extra sourceDirs
+        append(builder, "sourceSets {", NEWLINE);
+        append(builder, INDENT, "main.java.srcDir 'src/main/start'", NEWLINE); // add start dir to gradle sources
+        if (src != null )     append(builder, INDENT, "main.java.srcDir '",      relative(workspace, src),     "'", NEWLINE);
+        if (res != null )     append(builder, INDENT, "main.resources.srcDir '", relative(workspace, res),     "'", NEWLINE);
+        if (testSrc != null ) append(builder, INDENT, "test.java.srcDir '",      relative(workspace, testSrc), "'", NEWLINE);
+        if (testRes != null ) append(builder, INDENT, "test.resources.srcDir '", relative(workspace, testRes), "'", NEWLINE);
+        append(builder, "}");
+
+        // @formatter:on
+
+        // write
+        Files.write(builder.toString(), output, Constants.CHARSET);
+    }
+
+    private static void lines(StringBuilder out, int indentLevel, CharSequence... lines) {
+        String indent = Strings.repeat(INDENT, indentLevel);
+
+        for (CharSequence line : lines) {
+            out.append(indent).append(line).append(NEWLINE);
+        }
+    }
+
+    private static void append(StringBuilder out, CharSequence... things) {
+        for (CharSequence str : things) {
+            out.append(str);
+        }
+    }
+
+    private static String relative(URI base, File src) {
+        String relative = base.relativize(src.toURI()).getPath().replace('\\', '/');
+        if (!relative.endsWith("/"))
+            relative += "/";
+        return relative;
     }
 
     @TaskAction
@@ -117,61 +174,53 @@ class TaskGenSubprojects extends DefaultTask {
         Files.write(builder.toString(), output, Constants.CHARSET);
     }
 
-    private static void generateRootSettings(File output, Collection<String> projects) throws IOException {
-        StringBuilder builder = new StringBuilder();
-
-        builder.append("include '");
-        Joiner.on("', '").appendTo(builder, projects);
-        builder.append("'");
-
-        Files.write(builder.toString(), output, Constants.CHARSET);
+    public String getJavaLevel() {
+        return javaLevel;
     }
 
-    private static void generateProjectBuild(URI workspace, File output, DevProject project) throws IOException {
-        StringBuilder builder = new StringBuilder();
-
-        File src = project.getExternalSrcDir();
-        File res = project.getExternalResDir();
-        File testSrc = project.getExternalTestSrcDir();
-        File testRes = project.getExternalTestResDir();
-
-        // @formatter:off
-
-        // why use relatvie paths? so the eclipse hack below can work correctly.
-        // add extra sourceDirs
-        append(builder, "sourceSets {", NEWLINE);
-        append(builder, INDENT, "main.java.srcDir 'src/main/start'", NEWLINE); // add start dir to gradle sources
-        if (src != null )     append(builder, INDENT, "main.java.srcDir '",      relative(workspace, src),     "'", NEWLINE);
-        if (res != null )     append(builder, INDENT, "main.resources.srcDir '", relative(workspace, res),     "'", NEWLINE);
-        if (testSrc != null ) append(builder, INDENT, "test.java.srcDir '",      relative(workspace, testSrc), "'", NEWLINE);
-        if (testRes != null ) append(builder, INDENT, "test.resources.srcDir '", relative(workspace, testRes), "'", NEWLINE);
-        append(builder, "}");
-
-        // @formatter:on
-
-        // write
-        Files.write(builder.toString(), output, Constants.CHARSET);
+    public void setJavaLevel(String javaLevel) {
+        this.javaLevel = javaLevel;
     }
 
-    private static void lines(StringBuilder out, int indentLevel, CharSequence... lines) {
-        String indent = Strings.repeat(INDENT, indentLevel);
+    public void addCompileDep(String depString) {
+        dependencies.add("compile '" + depString + "'");
+    }
 
-        for (CharSequence line : lines) {
-            out.append(indent).append(line).append(NEWLINE);
+    public void addTestCompileDep(String depString) {
+        dependencies.add("testCompile '" + depString + "'");
+    }
+
+    public void addRepo(String name, String url) {
+        repositories.add(new Repo(name, url));
+    }
+
+    @OutputFiles
+    public List<File> getGeneratedFiles() {
+        List<File> files = new ArrayList<File>(2 + projects.size());
+        File workspace = getWorkspaceDir();
+        files.add(new File(workspace, "build.gradle"));
+        files.add(new File(workspace, "settings.gradle"));
+
+        for (DevProject p : projects.values()) {
+            files.add(new File(p.getProjectDir(workspace) + "/build.gradle"));
         }
+        return files;
     }
 
-    private static void append(StringBuilder out, CharSequence... things) {
-        for (CharSequence str : things) {
-            out.append(str);
-        }
+    public void putProject(String name, Object externalSrcDir, Object externalResDir, Object externalTestSrcDir, Object externalTestResDir) {
+        projects.put(name, new DevProject(getProject(), name, externalSrcDir, externalResDir, externalTestSrcDir, externalTestResDir));
     }
 
-    private static String relative(URI base, File src) {
-        String relative = base.relativize(src.toURI()).getPath().replace('\\', '/');
-        if (!relative.endsWith("/"))
-            relative += "/";
-        return relative;
+    public void removeProject(String name) {
+        projects.remove(name);
+    }
+
+    public File getWorkspaceDir() {
+        return getProject().file(workspaceDir);
+    }
+
+    public void setWorkspaceDir(Object workspaceDir) {
+        this.workspaceDir = workspaceDir;
     }
 
     @SuppressWarnings("serial")
@@ -223,54 +272,5 @@ class TaskGenSubprojects extends DefaultTask {
         public File getExternalTestResDir() {
             return externalTestResDir == null ? null : project.file(externalTestResDir);
         }
-    }
-
-    public String getJavaLevel() {
-        return javaLevel;
-    }
-
-    public void setJavaLevel(String javaLevel) {
-        this.javaLevel = javaLevel;
-    }
-
-    public void addCompileDep(String depString) {
-        dependencies.add("compile '" + depString + "'");
-    }
-
-    public void addTestCompileDep(String depString) {
-        dependencies.add("testCompile '" + depString + "'");
-    }
-
-    public void addRepo(String name, String url) {
-        repositories.add(new Repo(name, url));
-    }
-
-    @OutputFiles
-    public List<File> getGeneratedFiles() {
-        List<File> files = new ArrayList<File>(2 + projects.size());
-        File workspace = getWorkspaceDir();
-        files.add(new File(workspace, "build.gradle"));
-        files.add(new File(workspace, "settings.gradle"));
-
-        for (DevProject p : projects.values()) {
-            files.add(new File(p.getProjectDir(workspace) + "/build.gradle"));
-        }
-        return files;
-    }
-
-    public void putProject(String name, Object externalSrcDir, Object externalResDir, Object externalTestSrcDir, Object externalTestResDir) {
-        projects.put(name, new DevProject(getProject(), name, externalSrcDir, externalResDir, externalTestSrcDir, externalTestResDir));
-    }
-
-    public void removeProject(String name) {
-        projects.remove(name);
-    }
-
-    public File getWorkspaceDir() {
-        return getProject().file(workspaceDir);
-    }
-
-    public void setWorkspaceDir(Object workspaceDir) {
-        this.workspaceDir = workspaceDir;
     }
 }

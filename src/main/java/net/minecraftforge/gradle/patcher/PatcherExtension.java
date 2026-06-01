@@ -33,6 +33,10 @@ public class PatcherExtension extends BaseExtension {
     private boolean buildUserdev = false;
     private boolean buildInstaller = false;
 
+    public PatcherExtension(PatcherPlugin plugin) {
+        super(plugin);
+    }
+
     public boolean isBuildUserdev() {
         return buildUserdev;
     }
@@ -47,10 +51,6 @@ public class PatcherExtension extends BaseExtension {
 
     public void setBuildInstaller(boolean buildInstaller) {
         this.buildInstaller = buildInstaller;
-    }
-
-    public PatcherExtension(PatcherPlugin plugin) {
-        super(plugin);
     }
 
     public String getInstallerVersion() {

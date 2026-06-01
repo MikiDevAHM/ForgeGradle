@@ -51,17 +51,14 @@ public class ApplyS2STask extends DefaultTask {
     @Optional
     @InputFiles
     private final List<Object> exc = new LinkedList<Object>();
-
-    @InputFile
-    private Object rangeMap;
-
-    @Optional
-    @InputFile
-    private Object excModifiers;
-
     // stuff defined on the tasks..
     @InputFiles
     private final List<Object> in = new LinkedList<Object>();
+    @InputFile
+    private Object rangeMap;
+    @Optional
+    @InputFile
+    private Object excModifiers;
     @OutputFile
     private Object out;
 
@@ -349,11 +346,11 @@ public class ApplyS2STask extends DefaultTask {
         this.rangeMap = rangeMap;
     }
 
-    public void setExcModifiers(Object value) {
-        this.excModifiers = value;
-    }
-
     public File getExcModifiers() {
         return this.excModifiers == null ? null : this.getProject().file(excModifiers);
+    }
+
+    public void setExcModifiers(Object value) {
+        this.excModifiers = value;
     }
 }

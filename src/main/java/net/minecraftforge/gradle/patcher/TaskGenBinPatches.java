@@ -47,16 +47,6 @@ import java.util.jar.JarOutputStream;
 import java.util.zip.Adler32;
 
 class TaskGenBinPatches extends DefaultTask {
-    //@formatter:off
-    @InputFile  private Object cleanClient;
-    @InputFile  private Object cleanServer;
-    @InputFile  private Object cleanMerged;
-    @InputFile  private Object dirtyJar;
-    @InputFile  private Object srg;
-    @OutputFile private Object devBinPatches;
-    @OutputFile private Object runBinPatches;
-    //@formatter:on
-
     @InputFiles
     private final List<Object> patchSets = Lists.newArrayList();
     @Internal
@@ -70,9 +60,15 @@ class TaskGenBinPatches extends DefaultTask {
     @Internal
     private final Delta delta = new Delta();
 
-    //@formatter:off
+    @InputFile  private Object cleanClient;
+    @InputFile  private Object cleanServer;
+    @InputFile  private Object cleanMerged;
+    @InputFile  private Object dirtyJar;
+    @InputFile  private Object srg;
+    @OutputFile private Object devBinPatches;
+    @OutputFile private Object runBinPatches;
+
     public TaskGenBinPatches() { super(); }
-    //@formatter:on
 
     @TaskAction
     public void doTask() throws Exception {

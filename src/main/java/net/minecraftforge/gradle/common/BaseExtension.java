@@ -40,14 +40,13 @@ public abstract class BaseExtension {
     protected transient ReplacementProvider replacer;
     protected String version;
     protected String mcpVersion = "unknown";
-
-    // this should never be touched except by the base plugin in this package
-    Map<String, Map<String, int[]>> mcpJson;
     protected boolean mappingsSet = false;
     protected String mappingsChannel = null;
     protected int mappingsVersion = -1;
     // custom version for custom mappings
     protected String mappingsCustom = null;
+    // this should never be touched except by the base plugin in this package
+    Map<String, Map<String, int[]>> mcpJson;
 
     public BaseExtension(BasePlugin<? extends BaseExtension> plugin) {
         this.project = plugin.project;
@@ -68,6 +67,12 @@ public abstract class BaseExtension {
         }
 
         forgeGradleVersion = version;
+    }
+
+    private static boolean searchArray(int[] array, int key) {
+        Arrays.sort(array);
+        int foundIndex = Arrays.binarySearch(array, key);
+        return foundIndex >= 0 && array[foundIndex] == key;
     }
 
     /**
@@ -130,39 +135,6 @@ public abstract class BaseExtension {
     }
 
     /**
-     * Get the MCP mappings channel
-     *
-     * @return The channel
-     * @see <a href="https://export.mcpbot.bspk.rs/">https://export.mcpbot.bspk.rs/</a>
-     */
-    public String getMappingsChannel() {
-        return mappingsChannel;
-    }
-
-    /**
-     * Strips the _nodoc and _verbose channel subtypes from the channel name.
-     *
-     * @return The channel without subtype
-     */
-    public String getMappingsChannelNoSubtype() {
-        int underscore = mappingsChannel.indexOf('_');
-        if (underscore <= 0) // already has docs.
-            return mappingsChannel;
-        else
-            return mappingsChannel.substring(0, underscore);
-    }
-
-    /**
-     * Get the MCP mappings version
-     *
-     * @return The version
-     * @see <a href="https://export.mcpbot.bspk.rs/">https://export.mcpbot.bspk.rs/</a>
-     */
-    public String getMappingsVersion() {
-        return mappingsCustom == null ? "" + mappingsVersion : mappingsCustom;
-    }
-
-    /**
      * Set the MCP mappings channel and version<br>
      * The format is: {@code channel_version}.<br>
      * Examples: {@code stable_17, snapshot_20151113}
@@ -207,6 +179,39 @@ public abstract class BaseExtension {
 
         // check
         checkMappings();
+    }
+
+    /**
+     * Get the MCP mappings channel
+     *
+     * @return The channel
+     * @see <a href="https://export.mcpbot.bspk.rs/">https://export.mcpbot.bspk.rs/</a>
+     */
+    public String getMappingsChannel() {
+        return mappingsChannel;
+    }
+
+    /**
+     * Strips the _nodoc and _verbose channel subtypes from the channel name.
+     *
+     * @return The channel without subtype
+     */
+    public String getMappingsChannelNoSubtype() {
+        int underscore = mappingsChannel.indexOf('_');
+        if (underscore <= 0) // already has docs.
+            return mappingsChannel;
+        else
+            return mappingsChannel.substring(0, underscore);
+    }
+
+    /**
+     * Get the MCP mappings version
+     *
+     * @return The version
+     * @see <a href="https://export.mcpbot.bspk.rs/">https://export.mcpbot.bspk.rs/</a>
+     */
+    public String getMappingsVersion() {
+        return mappingsCustom == null ? "" + mappingsVersion : mappingsCustom;
     }
 
     /**
@@ -265,11 +270,5 @@ public abstract class BaseExtension {
 
         // wasnt found
         throw new GradleConfigurationException("The specified mapping '" + getMappings() + "' does not exist!");
-    }
-
-    private static boolean searchArray(int[] array, int key) {
-        Arrays.sort(array);
-        int foundIndex = Arrays.binarySearch(array, key);
-        return foundIndex >= 0 && array[foundIndex] == key;
     }
 }

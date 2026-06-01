@@ -42,6 +42,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class CrowdinDownload extends DefaultTask {
+    // format these with the projectId and apiKey
+    private static final String EXPORT_URL = "https://api.crowdin.com/api/project/%s/export?key=%s";
+    private static final String DOWNLOAD_URL = "https://api.crowdin.com/api/project/%s/download/all.zip?key=%s";
     @Input
     private Object projectId;
     @Input
@@ -50,10 +53,6 @@ public class CrowdinDownload extends DefaultTask {
     private boolean extract = true;
     @OutputFile
     private Object output;
-
-    // format these with the projectId and apiKey
-    private static final String EXPORT_URL = "https://api.crowdin.com/api/project/%s/export?key=%s";
-    private static final String DOWNLOAD_URL = "https://api.crowdin.com/api/project/%s/download/all.zip?key=%s";
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public CrowdinDownload() {

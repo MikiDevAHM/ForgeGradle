@@ -56,6 +56,22 @@ class TaskExtractNew extends DefaultTask {
     public TaskExtractNew() { super(); }
     //@formatter:on
 
+    private static InputSupplier getSupplier(List<File> files) throws IOException {
+        SequencedInputSupplier supplier = new SequencedInputSupplier(files.size() + 1);
+
+        for (File f : files) {
+            if (f.isDirectory())
+                supplier.add(new FolderSupplier(f));
+            else {
+                ZipInputSupplier supp = new ZipInputSupplier();
+                supp.readZip(f);
+                supplier.add(supp);
+            }
+        }
+
+        return supplier;
+    }
+
     @TaskAction
     public void doStuff() throws IOException {
         ending = Strings.nullToEmpty(ending);
@@ -110,22 +126,6 @@ class TaskExtractNew extends DefaultTask {
         }
 
         return cleans.contains(path);
-    }
-
-    private static InputSupplier getSupplier(List<File> files) throws IOException {
-        SequencedInputSupplier supplier = new SequencedInputSupplier(files.size() + 1);
-
-        for (File f : files) {
-            if (f.isDirectory())
-                supplier.add(new FolderSupplier(f));
-            else {
-                ZipInputSupplier supp = new ZipInputSupplier();
-                supp.readZip(f);
-                supplier.add(supp);
-            }
-        }
-
-        return supplier;
     }
 
     @InputFiles

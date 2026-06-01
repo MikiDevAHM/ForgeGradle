@@ -42,14 +42,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 class TaskSubprojectCall extends DefaultTask {
-    @Input
-    private Object projectDir;
-    @Input
-    private Object callLine;
     @InputFiles
     private final List<URL> initResources = Lists.newArrayList();
     @Input
     private final Map<String, Object> replacements = Maps.newHashMap();
+    @Input
+    private Object projectDir;
+    @Input
+    private Object callLine;
 
     //@formatter:off
     public TaskSubprojectCall() { super(); }

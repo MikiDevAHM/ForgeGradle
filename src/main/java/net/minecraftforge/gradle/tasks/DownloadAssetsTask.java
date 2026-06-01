@@ -46,17 +46,23 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class DownloadAssetsTask extends DefaultTask {
+    private static final int MAX_TRIES = 5;
+    private final File minecraftDir = new File(Constants.getMinecraftDirectory(), "assets/objects");
     @Internal
     DelayedFile assetsDir;
-
     @Input
     private Object assetIndex;
-
     private File virtualRoot = null;
 
-    private final File minecraftDir = new File(Constants.getMinecraftDirectory(), "assets/objects");
+    private static boolean checkFileCorrupt(File file, long size, String expectedHash) {
+        if (!file.exists())
+            return true;
 
-    private static final int MAX_TRIES = 5;
+        if (file.length() != size)
+            return true;
+
+        return !expectedHash.equalsIgnoreCase(Constants.hash(file, "SHA1"));
+    }
 
     @TaskAction
     public void doTask() throws IOException, InterruptedException {
@@ -121,16 +127,6 @@ public class DownloadAssetsTask extends DefaultTask {
             this.hash = hash.toLowerCase();
             this.size = size;
         }
-    }
-
-    private static boolean checkFileCorrupt(File file, long size, String expectedHash) {
-        if (!file.exists())
-            return true;
-
-        if (file.length() != size)
-            return true;
-
-        return !expectedHash.equalsIgnoreCase(Constants.hash(file, "SHA1"));
     }
 
     private static class GetAssetTask implements Callable<Boolean> {

@@ -38,19 +38,14 @@ import java.util.Set;
 class TaskMergeFiles extends DefaultTask {
     @InputFiles
     private final List<Object> inSrgs = Lists.newArrayListWithExpectedSize(3);
-
-    @OutputFile
-    private Object outSrg;
-
     @InputFiles
     private final List<Object> inExcs = Lists.newArrayListWithExpectedSize(3);
-
-    @OutputFile
-    private Object outExc;
-
     @InputFiles
     private final List<Object> inAts = Lists.newArrayListWithExpectedSize(3);
-
+    @OutputFile
+    private Object outSrg;
+    @OutputFile
+    private Object outExc;
     @OutputFile
     private Object outAt;
 

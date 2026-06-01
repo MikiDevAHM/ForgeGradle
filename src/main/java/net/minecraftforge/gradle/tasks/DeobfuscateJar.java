@@ -50,38 +50,29 @@ import java.util.zip.ZipFile;
 import static org.objectweb.asm.Opcodes.*;
 
 public class DeobfuscateJar extends CachedTask {
+    @InputFiles
+    private final ArrayList<Object> ats = Lists.newArrayList();
     @InputFile
     @Optional
     private Object fieldCsv;
     @InputFile
     @Optional
     private Object methodCsv;
-
     @InputFile
     private Object inJar;
-
     @InputFile
     private Object srg;
-
     @InputFile
     private Object exceptorCfg;
-
     @InputFile
     private Object exceptorJson;
-
     @Input
     private boolean applyMarkers = false;
-
     @Input
     private boolean failOnAtError = true;
-
     @OutputFile
     @Cached
     private Object outJar;
-
-    @InputFiles
-    private final ArrayList<Object> ats = Lists.newArrayList();
-
     @Internal
     private Object log;
 
@@ -418,9 +409,9 @@ public class DeobfuscateJar extends CachedTask {
 
     private static final class ErroringRemappingAccessMap extends AccessMap {
         @Internal
-        private final Map<String, String> renames = Maps.newHashMap();
-        @Internal
         public final Map<String, String> brokenLines = Maps.newHashMap();
+        @Internal
+        private final Map<String, String> renames = Maps.newHashMap();
 
         public ErroringRemappingAccessMap(File[] renameCsvs) throws IOException {
             super();
