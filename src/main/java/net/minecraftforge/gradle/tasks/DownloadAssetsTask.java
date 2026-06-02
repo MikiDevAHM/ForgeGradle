@@ -26,7 +26,6 @@ import net.minecraftforge.gradle.util.json.JsonFactory;
 import net.minecraftforge.gradle.util.json.version.AssetIndex;
 import net.minecraftforge.gradle.util.json.version.AssetIndex.AssetEntry;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskAction;
 import org.slf4j.Logger;
@@ -50,6 +49,7 @@ public class DownloadAssetsTask extends DefaultTask {
     private final File minecraftDir = new File(Constants.getMinecraftDirectory(), "assets/objects");
     @Internal
     DelayedFile assetsDir;
+    @Internal
     private Object assetIndex;
     private File virtualRoot = null;
 
@@ -106,7 +106,6 @@ public class DownloadAssetsTask extends DefaultTask {
         this.assetsDir = assetsDir;
     }
 
-    @InputFile
     public File getAssetIndex() {
         return getProject().file(assetIndex);
     }
