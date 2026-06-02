@@ -59,6 +59,9 @@ public class TaskRecompileMc extends CachedTask {
 
     private static String getExtPath() {
         String currentExtDirs = System.getProperty("java.ext.dirs");
+        if (currentExtDirs == null || currentExtDirs.isEmpty()) {
+            return "";
+        }
         String newExtDirs = "";
         String[] parts = currentExtDirs.split(File.pathSeparator);
         if (parts.length > 0) {
