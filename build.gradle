@@ -9,10 +9,15 @@ buildscript {
     	maven {
             url "https://jitpack.io/"
         }
+        mavenCentral()
     }
     dependencies {
         classpath "com.gradle.publish:plugin-publish-plugin:0.9.1"
         classpath 'org.eclipse.jgit:org.eclipse.jgit:5.10.0.202012080955-r'
+        // Need ASM on buildscript classpath to patch SpecialSource classes
+        classpath 'org.ow2.asm:asm:9.7.1'
+        classpath 'org.ow2.asm:asm-tree:9.7.1'
+        classpath 'org.ow2.asm:asm-commons:9.7.1'
     }
 }
 
@@ -28,7 +33,7 @@ project.ext {
 }
 
 group = 'net.minecraftforge.gradle'
-version = "1.1.0"
+version = project.version == "unspecified" ? "1.1.0" : project.version
 archivesBaseName = 'ForgeGradle'
 targetCompatibility = '8'
 sourceCompatibility = '8'
@@ -67,12 +72,6 @@ configurations {
 dependencies {
     implementation gradleApi()
 
-    // moved to the beginning to be the overrider
-    implementation 'org.ow2.asm:asm:9.7.1'
-    implementation 'org.ow2.asm:asm-commons:9.7.1'
-    implementation 'org.ow2.asm:asm-tree:9.7.1'
-    implementation 'org.ow2.asm:asm-analysis:9.7.1'
-    implementation 'org.ow2.asm:asm-util:9.7.1'
     implementation 'com.google.guava:guava:18.0'
 
     implementation 'net.sf.opencsv:opencsv:2.3' // reading CSVs.. also used by SpecialSource
@@ -89,6 +88,13 @@ dependencies {
     shade ('com.github.thefightagainstmalware:SpecialSource:ab856ded6b')
 	// deobf and reobs
     // compile 'net.md-5:SpecialSource:1.7.4' // when md5 publishes
+
+    // Override SpecialSource's bundled old ASM with Java 21-compatible version
+    shade 'org.ow2.asm:asm:9.7.1'
+    shade 'org.ow2.asm:asm-commons:9.7.1'
+    shade 'org.ow2.asm:asm-tree:9.7.1'
+    shade 'org.ow2.asm:asm-analysis:9.7.1'
+    shade 'org.ow2.asm:asm-util:9.7.1'
 
     // because curse
     implementation 'org.apache.httpcomponents:httpclient:4.3.3'
@@ -132,8 +138,16 @@ processResources {
 }
 
 jar {
-    duplicatesStrategy = DuplicatesStrategy.WARN;
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE;
+    // Pass 1: all shade deps, excluding their bundled ASM
     configurations.shade.each { dep ->
+        from(project.zipTree(dep)){
+            exclude 'META-INF', 'META-INF/**'
+            exclude 'org/objectweb/asm/**'
+        }
+    }
+    // Pass 2: ASM 9.7.1 shade deps only (re-adds modern ASM to override old)
+    configurations.shade.findAll { it.name.contains('asm') && it.name.contains('9.7.1') }.each { dep ->
         from(project.zipTree(dep)){
             exclude 'META-INF', 'META-INF/**'
         }
@@ -145,6 +159,83 @@ jar {
         attributes 'group':project.group
         attributes 'Implementation-Version': project.version + "-" + GIT_INFO.hash
     }
+}
+
+// Patch SpecialSource bytecode to use ASM9 API level instead of ASM5.
+// Fixes "NestHost requires ASM7" — SpecialSource compiled with Opcodes.ASM5 (327680)
+// but ASM 9.7.1's ClassVisitor checks (api < ASM7) before visitNestHost/visitNestMember.
+import org.objectweb.asm.*
+import org.objectweb.asm.tree.*
+
+jar.doLast {
+    def jarFile = jar.archivePath
+    def tempFile = new File(jarFile.absolutePath + ".tmp")
+    def asmApiUpgrade = [262144: 589824, 327680: 589824, 393216: 589824] // ASM4/5/6 → ASM9
+    // Track seen entry names to handle duplicates from two-pass jar shading
+    def seen = new HashSet<String>()
+
+    def fis = new FileInputStream(jarFile)
+    def zis = new java.util.zip.ZipInputStream(fis)
+    def fos = new FileOutputStream(tempFile)
+    def zos = new java.util.zip.ZipOutputStream(fos)
+    zos.setLevel(java.util.zip.Deflater.DEFAULT_COMPRESSION)
+
+    java.util.zip.ZipEntry entry
+    while ((entry = zis.nextEntry) != null) {
+        // Skip duplicate entries (two-pass jar can produce overlapping entries)
+        if (!seen.add(entry.name)) {
+            continue
+        }
+
+        def bytes = zis.readAllBytes()
+
+        if (entry.name.startsWith('net/md_5/specialsource/') && entry.name.endsWith('.class')) {
+            try {
+                ClassReader cr = new ClassReader(bytes)
+                ClassNode cn = new ClassNode(Opcodes.ASM9)
+                cr.accept(cn, 0)
+
+                boolean patched = false
+                for (MethodNode mn : cn.methods) {
+                    def insns = mn.instructions.toArray()
+                    for (AbstractInsnNode insn : insns) {
+                        if (insn instanceof LdcInsnNode) {
+                            LdcInsnNode ldc = (LdcInsnNode) insn
+                            def newVal = asmApiUpgrade.get(ldc.cst)
+                            if (newVal != null) {
+                                ldc.cst = newVal
+                                patched = true
+                            }
+                        }
+                    }
+                }
+
+                if (patched) {
+                    ClassWriter cw = new ClassWriter(0)
+                    cn.accept(cw)
+                    bytes = cw.toByteArray()
+                    println "Patched ASM API level in ${entry.name}"
+                }
+            } catch (Exception e) {
+                println "Warning: could not patch ${entry.name}: ${e.message}"
+            }
+        }
+
+        def newEntry = new java.util.zip.ZipEntry(entry.name)
+        newEntry.setTime(entry.time)
+        zos.putNextEntry(newEntry)
+        zos.write(bytes)
+        zos.closeEntry()
+    }
+
+    zis.close()
+    zos.close()
+    fos.close()
+    fis.close()
+
+    jarFile.delete()
+    tempFile.renameTo(jarFile)
+    println "SpecialSource ASM API level patching complete."
 }
 
 javadoc {
