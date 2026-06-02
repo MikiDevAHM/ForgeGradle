@@ -123,10 +123,11 @@ public class TaskRecompileMc extends CachedTask {
         }
 
         // FolderResourcePack.java — DirectoryFileFilter implements both FileFilter and FilenameFilter
+        // Use fully qualified name since MCP source doesn't import java.io.FileFilter
         if ("FolderResourcePack.java".equals(file.getName())) {
             content = content.replace(
                 ".listFiles(DirectoryFileFilter.DIRECTORY)",
-                ".listFiles((FileFilter) DirectoryFileFilter.DIRECTORY)"
+                ".listFiles((java.io.FileFilter) DirectoryFileFilter.DIRECTORY)"
             );
         }
 
