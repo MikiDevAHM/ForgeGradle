@@ -97,6 +97,44 @@ public class TaskRecompileMc extends CachedTask {
         zin.close();
     }
 
+    private static void fixSources(File dir) throws IOException {
+        File[] files = dir.listFiles();
+        if (files == null) return;
+        for (File file : files) {
+            if (file.isDirectory()) {
+                fixSources(file);
+            } else if (file.getName().endsWith(".java")) {
+                fixJavaFile(file);
+            }
+        }
+    }
+
+    private static void fixJavaFile(File file) throws IOException {
+        byte[] bytes = java.nio.file.Files.readAllBytes(file.toPath());
+        String content = new String(bytes, java.nio.charset.StandardCharsets.UTF_8);
+        String original = content;
+
+        // Java 21 rejects (Object)null in generic method context (List.add, Map.put, Set.add)
+        content = content.replace("(Object)null", "null");
+
+        // Cartesian.java — MCP patch adds (Iterator<T[]>) which Java 21 rejects
+        if ("Cartesian.java".equals(file.getName())) {
+            content = content.replace("(Iterator<T[]>)", "(Iterator)");
+        }
+
+        // FolderResourcePack.java — DirectoryFileFilter implements both FileFilter and FilenameFilter
+        if ("FolderResourcePack.java".equals(file.getName())) {
+            content = content.replace(
+                ".listFiles(DirectoryFileFilter.DIRECTORY)",
+                ".listFiles((FileFilter) DirectoryFileFilter.DIRECTORY)"
+            );
+        }
+
+        if (!content.equals(original)) {
+            java.nio.file.Files.write(file.toPath(), content.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        }
+    }
+
     @TaskAction
     public void doStuff() throws IOException {
         File inJar = getInSources();
@@ -111,6 +149,9 @@ public class TaskRecompileMc extends CachedTask {
 
         // extract sources
         extractSources(tempSrc, inJar);
+
+        // fix common Java 9+ compilation issues in MCP-decompiled source
+        fixSources(tempSrc);
 
         AntBuilder ant = CreateStartTask.setupAnt(this);
         getExtPath();
