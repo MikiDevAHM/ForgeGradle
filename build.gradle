@@ -187,7 +187,14 @@ jar.doLast {
             continue
         }
 
-        def bytes = zis.readAllBytes()
+        // Use manual read loop instead of readAllBytes() for Java 8 compatibility on JitPack
+        def buf = new byte[8192]
+        def bos = new java.io.ByteArrayOutputStream()
+        int len
+        while ((len = zis.read(buf)) > 0) {
+            bos.write(buf, 0, len)
+        }
+        def bytes = bos.toByteArray()
 
         if (entry.name.startsWith('net/md_5/specialsource/') && entry.name.endsWith('.class')) {
             try {
