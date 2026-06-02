@@ -74,7 +74,7 @@ public class PostDecompileTask extends AbstractEditJarTask {
         for (File f : files) {
             logger.debug("trying MCP patch " + f.getName());
             lastFile = f;
-            patch = ContextualPatch.create(Files.toString(f, Constants.CHARSET), provider).setAccessC14N(true);
+            patch = ContextualPatch.create(Files.toString(f, Constants.CHARSET), provider).setAccessC14N(true).setMaxFuzz(2);
 
             List<PatchReport> errors = patch.patch(true);
 

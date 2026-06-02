@@ -850,6 +850,14 @@ public final class ContextualPatch {
                 target = target.replaceAll("[\t| ]+", " ");
                 hunk = hunk.replaceAll("[\t| ]+", " ");
             }
+            // Normalize redundant type information that newer FernFlower decompilers omit.
+            // Strip type witnesses in method calls: Arrays.<T>asList -> Arrays.asList
+            target = target.replaceAll("\\.<\\w+>", ".");
+            hunk = hunk.replaceAll("\\.<\\w+>", ".");
+            // Strip redundant casts before simple variable names: (ITextureObject)p_110579_2_ -> p_110579_2_
+            // Only strips when the rest of the token has no '.' or '(' (i.e. not a method call on a cast)
+            target = target.replaceAll("^\\([^)]+\\)(?=[\\w_][^.(]*$)", "");
+            hunk = hunk.replaceAll("^\\([^)]+\\)(?=[\\w_][^.(]*$)", "");
             String[] t = target.split(" ");
             String[] h = hunk.split(" ");
 
